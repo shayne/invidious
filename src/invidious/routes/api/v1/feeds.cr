@@ -34,9 +34,11 @@ module Invidious::Routes::API::V1::Feeds
       haltf env, 403, error_message
     end
 
+    popular_range = Invidious::Popular.parse_range(env.params.query["range"]?)
+
     JSON.build do |json|
       json.array do
-        popular_videos.each do |video|
+        popular_videos(popular_range).each do |video|
           video.to_json(locale, json)
         end
       end
