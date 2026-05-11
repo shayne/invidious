@@ -129,13 +129,11 @@ module Invidious::Popular
 
   def self.score(candidate : Candidate, now : Time = Time.utc) : Float64
     current_views = candidate.video.views || 0_i64
-    age_hours = (now - candidate.video.published).total_seconds / 3600.0
-    age_hours = 0.0 if age_hours < 0.0
+    age_seconds = (now - candidate.video.published).total_seconds
+    return 0.0 if age_seconds < 0.0
 
-    baseline_48h = candidate.baseline_48h
-    if baseline_48h <= 0.0
-      baseline_48h = current_views > 0 ? current_views.to_f : 1.0
-    end
+    age_hours = age_seconds / 3600.0
+    baseline_48h = effective_baseline_48h(candidate.baseline_48h, current_views, age_hours)
 
     relative_nowcast = current_views.to_f / Math.max(1.0, baseline_48h * age_curve_fraction_48h(age_hours))
     velocity_shock = (current_views.to_f / Math.max(age_hours, 1.0)) /
@@ -160,7 +158,15 @@ module Invidious::Popular
       end
   end
 
-  def self.age_curve_fraction_48h(age_hours : Float64) : Float64
+  private def self.effective_baseline_48h(baseline_48h : Float64, current_views : Int64, age_hours : Float64) : Float64
+    return baseline_48h if baseline_48h > 0.0
+    return 1.0 if current_views <= 0
+
+    projected_48h = current_views.to_f * (48.0 / Math.max(age_hours, 1.0))
+    Math.max(Math.max(projected_48h, current_views.to_f), 1.0)
+  end
+
+  private def self.age_curve_fraction_48h(age_hours : Float64) : Float64
     if age_hours <= 0.0
       0.03
     elsif age_hours <= 8.0
@@ -172,7 +178,7 @@ module Invidious::Popular
     end
   end
 
-  def self.age_curve_expected_slope(age_hours : Float64) : Float64
+  private def self.age_curve_expected_slope(age_hours : Float64) : Float64
     if age_hours <= 8.0
       0.075
     elsif age_hours < 48.0
@@ -182,7 +188,7 @@ module Invidious::Popular
     end
   end
 
-  def self.duration_prior(length_seconds : Int32) : Float64
+  private def self.duration_prior(length_seconds : Int32) : Float64
     if length_seconds <= 0
       0.5
     elsif length_seconds < 120
@@ -198,19 +204,19 @@ module Invidious::Popular
     end
   end
 
-  def self.norm_ratio(value : Float64, cap : Float64 = 6.0) : Float64
+  private def self.norm_ratio(value : Float64, cap : Float64 = 6.0) : Float64
     return 0.0 if value <= 0.0
 
     (Math.log1p(value) / Math.log1p(cap)).clamp(0.0, 1.0)
   end
 
-  def self.norm_reach(reach : Float64) : Float64
+  private def self.norm_reach(reach : Float64) : Float64
     return 0.0 if reach <= 0.0
 
     Math.sqrt(reach * 10.0).clamp(0.0, 1.0)
   end
 
-  def self.confidence_multiplier(current_views : Int64, sample_count : Int64) : Float64
+  private def self.confidence_multiplier(current_views : Int64, sample_count : Int64) : Float64
     multiplier =
       if sample_count >= 5
         1.05
@@ -224,7 +230,7 @@ module Invidious::Popular
     multiplier.clamp(0.75, 1.05)
   end
 
-  def self.early_breakout_boost(age_hours : Float64, relative_nowcast : Float64, velocity_shock : Float64) : Float64
+  private def self.early_breakout_boost(age_hours : Float64, relative_nowcast : Float64, velocity_shock : Float64) : Float64
     return 0.0 if age_hours > 6.0
     return 0.0 if relative_nowcast < 1.2 || velocity_shock < 1.2
 

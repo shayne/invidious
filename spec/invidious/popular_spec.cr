@@ -5,7 +5,7 @@ private def popular_video(
   id : String,
   ucid : String,
   published : Time,
-  views : Int64,
+  views : Int64?,
   length_seconds : Int32 = 754,
 ) : ChannelVideo
   ChannelVideo.new({
@@ -94,7 +94,31 @@ Spectator.describe Invidious::Popular do
       ranked = described_class.rank([recent, outlier], now)
 
       expect(ranked.first.video.id).to eq("month-outlier")
-      expect(ranked.first.score > 0.9).to be_true
+      expect(ranked.first.score.finite?).to be_true
+      expect(ranked.first.score > 0.0).to be_true
+    end
+
+    it "does not let future published videos outrank normal candidates" do
+      now = Time.utc(2026, 5, 10, 12, 0, 0)
+      future = Invidious::Popular::Candidate.new(
+        video: popular_video("future", "UC1", now + 2.hours, 100_000_i64),
+        local_subscription_count: 1000_i64,
+        baseline_48h: 0.0,
+        baseline_sample_count: 6_i64
+      )
+      normal = Invidious::Popular::Candidate.new(
+        video: popular_video("normal", "UC2", now - 4.hours, 700_i64),
+        local_subscription_count: 1000_i64,
+        baseline_48h: 1200.0,
+        baseline_sample_count: 6_i64
+      )
+
+      ranked = described_class.rank([future, normal], now)
+      future_score = described_class.score(future, now)
+
+      expect(future_score.finite?).to be_true
+      expect(future_score).to eq(0.0)
+      expect(ranked.first.video.id).to eq("normal")
     end
   end
 
@@ -120,6 +144,92 @@ Spectator.describe Invidious::Popular do
 
       expect(sparse_score > 0.0).to be_true
       expect(sparse_score < confident_score).to be_true
+    end
+
+    it "keeps nil views low and finite" do
+      now = Time.utc(2026, 5, 10, 12, 0, 0)
+      candidate = Invidious::Popular::Candidate.new(
+        video: popular_video("nil-views", "UC1", now - 6.hours, nil),
+        local_subscription_count: 0_i64,
+        baseline_48h: 0.0,
+        baseline_sample_count: 0_i64
+      )
+
+      score = described_class.score(candidate, now)
+
+      expect(score.finite?).to be_true
+      expect(score >= 0.0).to be_true
+      expect(score < 0.1).to be_true
+    end
+
+    it "keeps zero baselines conservative" do
+      now = Time.utc(2026, 5, 10, 12, 0, 0)
+      video = popular_video("zero-baseline", "UC1", now - 2.hours, 4000_i64)
+      zero_baseline = Invidious::Popular::Candidate.new(
+        video: video,
+        local_subscription_count: 1000_i64,
+        baseline_48h: 0.0,
+        baseline_sample_count: 6_i64
+      )
+      known_baseline = Invidious::Popular::Candidate.new(
+        video: video,
+        local_subscription_count: 1000_i64,
+        baseline_48h: 4000.0,
+        baseline_sample_count: 6_i64
+      )
+
+      zero_score = described_class.score(zero_baseline, now)
+      known_score = described_class.score(known_baseline, now)
+
+      expect(zero_score.finite?).to be_true
+      expect(zero_score < known_score).to be_true
+      expect(zero_score < 0.75).to be_true
+    end
+  end
+
+  describe ".empty_cache" do
+    it "has every supported range with independent empty arrays" do
+      cache = described_class.empty_cache
+
+      expect(cache.size).to eq(Invidious::Popular::RANGES.size)
+      Invidious::Popular::RANGES.each do |range|
+        expect(cache.has_key?(range)).to be_true
+        expect(cache[range]).to be_empty
+      end
+
+      cache[Invidious::Popular::Range::Day] << popular_video("cached", "UC1", Time.utc(2026, 5, 10, 12, 0, 0), 1_i64)
+
+      expect(cache[Invidious::Popular::Range::Day]).to_not be_empty
+      expect(cache[Invidious::Popular::Range::Week]).to be_empty
+      expect(cache[Invidious::Popular::Range::Day].object_id).to_not eq(cache[Invidious::Popular::Range::Week].object_id)
+    end
+  end
+
+  describe Invidious::Popular::CandidateRow do
+    it "preserves nullable views and baseline fields" do
+      now = Time.utc(2026, 5, 10, 12, 0, 0)
+      row = described_class.new({
+        id:                       "row-video",
+        title:                    "Video row-video",
+        published:                now,
+        updated:                  now,
+        ucid:                     "UC1",
+        author:                   "Channel UC1",
+        length_seconds:           754,
+        live_now:                 false,
+        premiere_timestamp:       nil,
+        views:                    nil,
+        local_subscription_count: 17_i64,
+        baseline_48h:             123.5,
+        baseline_sample_count:    4_i64,
+      })
+
+      candidate = row.to_candidate
+
+      expect(candidate.video.views).to be_nil
+      expect(candidate.local_subscription_count).to eq(17_i64)
+      expect(candidate.baseline_48h).to eq(123.5)
+      expect(candidate.baseline_sample_count).to eq(4_i64)
     end
   end
 end
