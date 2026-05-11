@@ -1,4 +1,5 @@
 require "./base.cr"
+require "../popular"
 
 #
 # This module contains functions related to the "channels" table.
@@ -142,6 +143,62 @@ module Invidious::Database::ChannelVideos
     SQL
 
     return PG_DB.query_all(request, ucid, since, as: ChannelVideo)
+  end
+
+  def popular_candidates_query : String
+    <<-SQL
+      WITH subscribed_channels AS (
+        SELECT channel AS ucid, COUNT(*) AS local_subscription_count
+        FROM (
+          SELECT UNNEST(subscriptions) AS channel
+          FROM users
+        ) AS local_subscriptions
+        WHERE channel IS NOT NULL AND channel != ''
+        GROUP BY channel
+      )
+      SELECT
+        cv.id,
+        cv.title,
+        cv.published,
+        cv.updated,
+        cv.ucid,
+        cv.author,
+        cv.length_seconds,
+        cv.live_now,
+        cv.premiere_timestamp,
+        cv.views,
+        sc.local_subscription_count,
+        COALESCE(baseline.baseline_48h, NULLIF(cv.views, 0), 1)::float8 AS baseline_48h,
+        COALESCE(baseline.sample_count, 0)::bigint AS baseline_sample_count
+      FROM channel_videos cv
+      JOIN subscribed_channels sc ON sc.ucid = cv.ucid
+      LEFT JOIN LATERAL (
+        SELECT AVG(sample.views)::float8 AS baseline_48h,
+               COUNT(*)::bigint AS sample_count
+        FROM (
+          SELECT cv2.views
+          FROM channel_videos cv2
+          WHERE cv2.ucid = cv.ucid
+            AND cv2.id != cv.id
+            AND cv2.views IS NOT NULL
+            AND cv2.views > 0
+            AND cv2.published < now() - interval '48 hours'
+            AND cv2.published >= now() - interval '180 days'
+          ORDER BY cv2.published DESC
+          LIMIT 20
+        ) sample
+      ) baseline ON true
+      WHERE cv.published >= now() - ($1::interval)
+        AND cv.published <= now()
+      ORDER BY cv.published DESC
+    SQL
+  end
+
+  def select_popular_candidates(range : Invidious::Popular::Range) : Array(Invidious::Popular::Candidate)
+    interval = "#{range.days} days"
+
+    PG_DB.query_all(popular_candidates_query, interval, as: Invidious::Popular::CandidateRow)
+      .map(&.to_candidate)
   end
 
   def select_popular_videos : Array(ChannelVideo)
