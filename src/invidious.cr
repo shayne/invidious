@@ -31,6 +31,7 @@ require "yaml"
 require "compress/zip"
 require "protodec/utils"
 
+require "./invidious/helpers/macros"
 require "./invidious/database/*"
 require "./invidious/database/migrations/*"
 require "./invidious/http_server/*"
@@ -192,8 +193,8 @@ Invidious::Jobs.register Invidious::Jobs::InstanceListRefreshJob.new
 
 Invidious::Jobs.start_all
 
-def popular_videos
-  Invidious::Jobs::PullPopularVideosJob::POPULAR_VIDEOS.get
+def popular_videos(range : Invidious::Popular::Range = Invidious::Popular::Range::Day)
+  Invidious::Jobs::PullPopularVideosJob::POPULAR_VIDEOS.get[range]? || [] of ChannelVideo
 end
 
 # Routing
