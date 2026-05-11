@@ -190,7 +190,7 @@ The job refreshes ranked lists for:
 - `twoweeks`
 - `month`
 
-Each cached entry contains the standard `ChannelVideo` plus its computed score. The web and API routes use the selected range to read from the cache.
+The job computes scores internally while ranking candidates, then caches standard `ChannelVideo` lists for web and API compatibility. Scores are not stored in the public cache entries. The web and API routes use the selected range to read from the cache.
 
 The job should refresh on the same broad cadence as today unless implementation profiling shows the all-subscribed-channel query needs a longer interval. The query must first restrict candidates to the maximum needed time window before ranking.
 

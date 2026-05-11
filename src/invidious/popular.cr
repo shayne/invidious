@@ -162,6 +162,15 @@ module Invidious::Popular
       end
   end
 
+  def self.filter_candidates(candidates : Array(Candidate), range : Range, now : Time = Time.utc) : Array(Candidate)
+    cutoff = now - range.span
+
+    candidates.select do |candidate|
+      published = candidate.video.published
+      published >= cutoff && published <= now
+    end
+  end
+
   private def self.effective_baseline_48h(baseline_48h : Float64, current_views : Int64, age_hours : Float64) : Float64
     return baseline_48h if baseline_48h > 0.0
     return 1.0 if current_views <= 0

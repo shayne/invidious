@@ -190,7 +190,6 @@ module Invidious::Database::ChannelVideos
       ) baseline ON true
       WHERE cv.published >= now() - ($1::interval)
         AND cv.published <= now()
-      ORDER BY cv.published DESC
     SQL
   end
 
@@ -199,17 +198,5 @@ module Invidious::Database::ChannelVideos
 
     PG_DB.query_all(popular_candidates_query, interval, as: Invidious::Popular::CandidateRow)
       .map(&.to_candidate)
-  end
-
-  def select_popular_videos : Array(ChannelVideo)
-    request = <<-SQL
-      SELECT DISTINCT ON (ucid) *
-      FROM channel_videos
-      WHERE ucid IN (SELECT channel FROM (SELECT UNNEST(subscriptions) AS channel FROM users) AS d
-      GROUP BY channel ORDER BY COUNT(channel) DESC LIMIT 40)
-      ORDER BY ucid, published DESC
-    SQL
-
-    PG_DB.query_all(request, as: ChannelVideo)
   end
 end

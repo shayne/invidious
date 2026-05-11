@@ -19,6 +19,19 @@ Spectator.describe Invidious::Database::ChannelVideos do
       expect(query.includes?("ORDER BY COUNT(channel) DESC LIMIT")).to be_false
     end
 
+    it "keeps the baseline sample bounded" do
+      query = described_class.popular_candidates_query
+
+      expect(query.includes?("ORDER BY cv2.published DESC")).to be_true
+      expect(query.includes?("LIMIT 20")).to be_true
+    end
+
+    it "does not sort final candidates before in-memory ranking" do
+      query = described_class.popular_candidates_query
+
+      expect(query.includes?("ORDER BY cv.published DESC")).to be_false
+    end
+
     it "bounds candidates by the selected publish window before ranking" do
       query = described_class.popular_candidates_query
 

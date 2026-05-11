@@ -28,3 +28,11 @@ CREATE INDEX IF NOT EXISTS channel_videos_ucid_idx
   USING btree
   (ucid COLLATE pg_catalog."default");
 
+-- Index: public.channel_videos_ucid_published_idx
+
+-- DROP INDEX public.channel_videos_ucid_published_idx;
+
+CREATE INDEX IF NOT EXISTS channel_videos_ucid_published_idx
+  ON public.channel_videos
+  USING btree
+  (ucid COLLATE pg_catalog."default", published DESC);

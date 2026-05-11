@@ -22,6 +22,15 @@ private def popular_video(
   })
 end
 
+private def popular_candidate(id : String, published : Time) : Invidious::Popular::Candidate
+  Invidious::Popular::Candidate.new(
+    video: popular_video(id, "UC#{id}", published, 100_i64),
+    local_subscription_count: 10_i64,
+    baseline_48h: 100.0,
+    baseline_sample_count: 5_i64
+  )
+end
+
 Spectator.describe Invidious::Popular do
   describe Invidious::Popular::Range do
     it "exposes range metadata in display order" do
@@ -119,6 +128,22 @@ Spectator.describe Invidious::Popular do
       expect(future_score.finite?).to be_true
       expect(future_score).to eq(0.0)
       expect(ranked.first.video.id).to eq("normal")
+    end
+  end
+
+  describe ".filter_candidates" do
+    it "keeps candidates inside the selected range and drops older or future videos" do
+      now = Time.utc(2026, 5, 10, 12, 0, 0)
+      candidates = [
+        popular_candidate("recent", now - 12.hours),
+        popular_candidate("boundary", now - Invidious::Popular::Range::Day.span),
+        popular_candidate("older", now - Invidious::Popular::Range::Day.span - 1.second),
+        popular_candidate("future", now + 1.second),
+      ]
+
+      filtered = described_class.filter_candidates(candidates, Invidious::Popular::Range::Day, now: now)
+
+      expect(filtered.map(&.video.id)).to eq(["recent", "boundary"])
     end
   end
 
