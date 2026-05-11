@@ -185,6 +185,30 @@ Spectator.describe Invidious::Popular do
       expect(zero_score < known_score).to be_true
       expect(zero_score < 0.75).to be_true
     end
+
+    it "treats positive baselines without samples as missing" do
+      now = Time.utc(2026, 5, 10, 12, 0, 0)
+      video = popular_video("missing-samples", "UC1", now - 2.hours, 4000_i64)
+      missing_samples = Invidious::Popular::Candidate.new(
+        video: video,
+        local_subscription_count: 1000_i64,
+        baseline_48h: 4000.0,
+        baseline_sample_count: 0_i64
+      )
+      sampled_baseline = Invidious::Popular::Candidate.new(
+        video: video,
+        local_subscription_count: 1000_i64,
+        baseline_48h: 4000.0,
+        baseline_sample_count: 6_i64
+      )
+
+      missing_score = described_class.score(missing_samples, now)
+      sampled_score = described_class.score(sampled_baseline, now)
+
+      expect(missing_score.finite?).to be_true
+      expect(missing_score < sampled_score).to be_true
+      expect(missing_score < 0.75).to be_true
+    end
   end
 
   describe ".empty_cache" do

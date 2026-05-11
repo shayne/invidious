@@ -45,10 +45,10 @@ module Invidious::Popular
   RANGES = {Range::Day, Range::Week, Range::TwoWeeks, Range::Month}
 
   struct Candidate
-    property video : ChannelVideo
-    property local_subscription_count : Int64
-    property baseline_48h : Float64
-    property baseline_sample_count : Int64
+    getter video : ChannelVideo
+    getter local_subscription_count : Int64
+    getter baseline_48h : Float64
+    getter baseline_sample_count : Int64
 
     def initialize(
       *,
@@ -61,8 +61,8 @@ module Invidious::Popular
   end
 
   struct RankedVideo
-    property video : ChannelVideo
-    property score : Float64
+    getter video : ChannelVideo
+    getter score : Float64
 
     def initialize(*, @video : ChannelVideo, @score : Float64)
     end
@@ -133,7 +133,11 @@ module Invidious::Popular
     return 0.0 if age_seconds < 0.0
 
     age_hours = age_seconds / 3600.0
-    baseline_48h = effective_baseline_48h(candidate.baseline_48h, current_views, age_hours)
+    baseline_48h = effective_baseline_48h(
+      candidate.baseline_sample_count > 0 ? candidate.baseline_48h : 0.0,
+      current_views,
+      age_hours
+    )
 
     relative_nowcast = current_views.to_f / Math.max(1.0, baseline_48h * age_curve_fraction_48h(age_hours))
     velocity_shock = (current_views.to_f / Math.max(age_hours, 1.0)) /
