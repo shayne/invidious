@@ -1,6 +1,7 @@
 module Invidious::Routes::API::V1::Search
   def self.search(env)
-    locale = env.get("preferences").as(Preferences).locale
+    preferences = env.get("preferences").as(Preferences)
+    locale = preferences.locale
     region = env.params.query["region"]?
 
     env.response.content_type = "application/json"
@@ -8,7 +9,7 @@ module Invidious::Routes::API::V1::Search
     query = Invidious::Search::Query.new(env.params.query, :regular, region)
 
     begin
-      search_results = query.process
+      search_results = query.process(hide_shorts: preferences.hide_shorts)
     rescue ex
       return error_json(400, ex)
     end

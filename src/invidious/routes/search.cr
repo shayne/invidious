@@ -59,9 +59,9 @@ module Invidious::Routes::Search
 
       begin
         if user
-          items = query.process(user.as(User))
+          items = query.process(user.as(User), hide_shorts: preferences.hide_shorts)
         else
-          items = query.process
+          items = query.process(hide_shorts: preferences.hide_shorts)
         end
       rescue ex : ChannelSearchException
         return error_template(404, "Unable to find channel with id of '#{HTML.escape(ex.channel)}'. Are you sure that's an actual channel id? It should look like 'UC4QobU6STFB0P71PMvOGN5A'.")

@@ -116,20 +116,20 @@ module Invidious::Search
 
     # Run the search query using the corresponding search processor.
     # Returns either the results or an empty array of `SearchItem`.
-    def process(user : Invidious::User? = nil) : Array(SearchItem) | Array(ChannelVideo)
+    def process(user : Invidious::User? = nil, *, hide_shorts : Bool? = nil) : Array(SearchItem) | Array(ChannelVideo)
       items = [] of SearchItem
 
       # Don't bother going further if search query is empty
       return items if self.empty_raw_query?
 
-      hide_shorts = user.try(&.preferences.hide_shorts) || false
+      youtube_hide_shorts = hide_shorts.nil? ? (user.try(&.preferences.hide_shorts) || false) : hide_shorts
 
       case @type
       when .regular?, .playlist?
-        items = Processors.regular(self, hide_shorts: hide_shorts)
+        items = Processors.regular(self, hide_shorts: youtube_hide_shorts)
         #
       when .channel?
-        items = Processors.channel(self, hide_shorts: hide_shorts)
+        items = Processors.channel(self, hide_shorts: youtube_hide_shorts)
         #
       when .subscriptions?
         if user

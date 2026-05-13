@@ -1,6 +1,8 @@
 require "../spec_helper"
 
-CONFIG = Config.from_yaml(File.open("config/config.example.yml"))
+{% unless @top_level.has_constant?(:CONFIG) %}
+  CONFIG = Config.from_yaml(File.open("config/config.example.yml"))
+{% end %}
 
 Spectator.describe "Helper" do
   describe "#produce_channel_search_continuation" do
