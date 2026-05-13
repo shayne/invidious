@@ -29,7 +29,8 @@ module Invidious::Channel::Tabs
     continuation ||= make_initial_videos_ctoken(ucid, sort_by)
     initial_data = YoutubeAPI.browse(continuation: continuation)
 
-    return extract_items(initial_data, author, ucid)
+    items, continuation = extract_items(initial_data, author, ucid)
+    return Invidious::Shorts.mark_from_videos_tab(items), continuation
   end
 
   def get_60_videos(channel : AboutChannel, *, continuation : String? = nil, sort_by = "newest")
@@ -59,7 +60,8 @@ module Invidious::Channel::Tabs
     continuation ||= make_initial_shorts_ctoken(channel.ucid, sort_by)
     initial_data = YoutubeAPI.browse(continuation: continuation)
 
-    return extract_items(initial_data, channel.author, channel.ucid)
+    items, continuation = extract_items(initial_data, channel.author, channel.ucid)
+    return Invidious::Shorts.mark_from_shorts_tab(items), continuation
   end
 
   # -------------------
