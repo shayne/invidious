@@ -75,7 +75,7 @@ module Invidious::Routes::Search
       page_nav_html = Frontend::Pagination.nav_numeric(locale,
         base_url: "/search?#{query.to_http_params}",
         current_page: query.page,
-        show_next: (items.size >= 20)
+        show_next: query.has_next_page?
       )
 
       if query.type == Invidious::Search::Query::Type::Channel

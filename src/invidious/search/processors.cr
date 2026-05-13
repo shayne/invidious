@@ -3,19 +3,19 @@ module Invidious::Search
     extend self
 
     # Regular search (`/search` endpoint)
-    def regular(query : Query, *, hide_shorts : Bool = false) : Array(SearchItem)
+    def regular(query : Query) : Array(SearchItem)
       search_params = query.filters.to_yt_params(page: query.page)
 
       client_config = YoutubeAPI::ClientConfig.new(region: query.region)
       initial_data = YoutubeAPI.search(query.text, search_params, client_config: client_config)
 
       items, _ = extract_items(initial_data)
-      return Invidious::Shorts.filter_search_items(items.reject!(Category), hide_shorts: hide_shorts)
+      return items.reject!(Category)
     end
 
     # Search a youtube channel
     # TODO: clean code, and rely more on YoutubeAPI
-    def channel(query : Query, *, hide_shorts : Bool = false) : Array(SearchItem)
+    def channel(query : Query) : Array(SearchItem)
       response = YT_POOL.client &.get("/channel/#{query.channel}")
 
       if response.status_code == 404
@@ -32,7 +32,7 @@ module Invidious::Search
       response_json = YoutubeAPI.browse(continuation)
 
       items, _ = extract_items(response_json, "", ucid)
-      return Invidious::Shorts.filter_search_items(items.reject!(Category), hide_shorts: hide_shorts)
+      return items.reject!(Category)
     end
 
     # Search inside of user subscriptions

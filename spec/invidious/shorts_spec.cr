@@ -43,6 +43,20 @@ private def shorts_channel_video(id : String, is_short : Bool?) : ChannelVideo
   })
 end
 
+private def shorts_search_channel(id : String) : SearchChannel
+  SearchChannel.new({
+    author:           "Channel #{id}",
+    ucid:             "UC#{id}",
+    author_thumbnail: "",
+    subscriber_count: 100,
+    video_count:      10,
+    channel_handle:   nil,
+    description_html: "",
+    auto_generated:   false,
+    author_verified:  false,
+  })
+end
+
 Spectator.describe Invidious::Shorts do
   describe ".visible?" do
     it "keeps false and unknown videos visible" do
@@ -114,13 +128,25 @@ Spectator.describe Invidious::Shorts do
     it "filters confirmed Shorts and preserves unknown SearchVideos and non-video items" do
       items = [
         shorts_search_video("short", true),
+        shorts_search_channel("channel"),
         shorts_search_video("unknown", nil),
         shorts_search_video("normal", false),
       ] of SearchItem
 
       filtered = described_class.filter_search_items(items, hide_shorts: true)
 
-      expect(filtered.map { |item| item.as(SearchVideo).id }).to eq(["unknown", "normal"])
+      labels = filtered.map do |item|
+        case item
+        when SearchVideo
+          item.id
+        when SearchChannel
+          item.ucid
+        else
+          item.class.to_s
+        end
+      end
+
+      expect(labels).to eq(["UCchannel", "unknown", "normal"])
     end
   end
 end

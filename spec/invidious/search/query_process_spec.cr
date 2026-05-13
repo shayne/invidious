@@ -13,93 +13,62 @@ require "../../../src/invidious/config"
 
 require "../../../src/invidious/user/preferences"
 require "../../../src/invidious/user/user"
+require "../../../src/invidious/shorts"
 require "../../../src/invidious/search/filters"
 require "../../../src/invidious/search/query"
 require "../../../src/invidious/search/processors"
 
 require "http/params"
 
-private def query_process_user(hide_shorts : Bool) : Invidious::User
-  preferences = Preferences.from_json({"hide_shorts" => hide_shorts}.to_json)
-
-  Invidious::User.new({
-    updated:           Time.utc,
-    notifications:     [] of String,
-    subscriptions:     [] of String,
-    email:             "user@example.com",
-    preferences:       preferences,
-    password:          nil,
-    token:             "token",
-    watched:           [] of String,
-    feed_needs_update: false,
+private def query_process_search_video(id : String, is_short : Bool?) : SearchVideo
+  SearchVideo.new({
+    title:              "Video #{id}",
+    id:                 id,
+    author:             "Author",
+    ucid:               "UC#{id}",
+    published:          Time.utc(2026, 5, 12, 12, 0, 0),
+    views:              100_i64,
+    description_html:   "",
+    length_seconds:     60,
+    premiere_timestamp: nil,
+    author_verified:    false,
+    author_thumbnail:   nil,
+    badges:             VideoBadges::None,
+    is_short:           is_short,
   })
 end
 
-module Invidious::Search::Processors
-  class_property regular_hide_shorts : Bool? = nil
-  class_property channel_hide_shorts : Bool? = nil
-  class_property subscription_user_hide_shorts : Bool? = nil
-
-  def self.reset_spec_state
-    @@regular_hide_shorts = nil
-    @@channel_hide_shorts = nil
-    @@subscription_user_hide_shorts = nil
-  end
-
-  def self.regular(query : Query, *, hide_shorts : Bool = false) : Array(SearchItem)
-    @@regular_hide_shorts = hide_shorts
-    [] of SearchItem
-  end
-
-  def self.channel(query : Query, *, hide_shorts : Bool = false) : Array(SearchItem)
-    @@channel_hide_shorts = hide_shorts
-    [] of SearchItem
-  end
-
-  def self.subscriptions(query : Query, user : Invidious::User) : Array(ChannelVideo)
-    @@subscription_user_hide_shorts = user.preferences.hide_shorts
-    [] of ChannelVideo
-  end
-end
-
 Spectator.describe Invidious::Search::Query do
-  before_each do
-    Invidious::Search::Processors.reset_spec_state
-  end
-
-  describe "#process" do
-    it "passes request-level hide_shorts to regular search" do
+  describe "#filter_youtube_items" do
+    it "keeps the raw YouTube page-size next-page signal before filtering Shorts" do
       query = described_class.new(
         HTTP::Params.parse("q=chips"),
         Invidious::Search::Query::Type::Regular, nil
       )
+      items = [] of SearchItem
+      (1..20).each do |index|
+        items << query_process_search_video("video#{index}", index == 1 ? true : false)
+      end
 
-      query.process(hide_shorts: true)
+      filtered = query.filter_youtube_items(items, hide_shorts: true)
 
-      expect(Invidious::Search::Processors.regular_hide_shorts).to be_true
+      expect(filtered.size).to eq(19)
+      expect(query.has_next_page?).to be_true
     end
 
-    it "passes request-level hide_shorts to channel search" do
+    it "does not advertise another page when the raw YouTube page is short" do
       query = described_class.new(
-        HTTP::Params.parse("q=soldering&channel=UC123456789"),
+        HTTP::Params.parse("q=chips"),
         Invidious::Search::Query::Type::Regular, nil
       )
+      items = [] of SearchItem
+      (1..19).each do |index|
+        items << query_process_search_video("video#{index}", false)
+      end
 
-      query.process(hide_shorts: true)
+      query.filter_youtube_items(items, hide_shorts: true)
 
-      expect(Invidious::Search::Processors.channel_hide_shorts).to be_true
-    end
-
-    it "uses the user object for subscription search preferences" do
-      query = described_class.new(
-        HTTP::Params.parse("q=subscriptions:true+soldering"),
-        Invidious::Search::Query::Type::Regular, nil
-      )
-      user = query_process_user(true)
-
-      query.process(user, hide_shorts: false)
-
-      expect(Invidious::Search::Processors.subscription_user_hide_shorts).to be_true
+      expect(query.has_next_page?).to be_false
     end
   end
 end

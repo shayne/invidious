@@ -1,5 +1,7 @@
 module Invidious::Search
   class Query
+    PAGE_SIZE = 20
+
     enum Type
       # Types related to YouTube
       Regular # Youtube search page
@@ -19,6 +21,7 @@ module Invidious::Search
     property page : Int32
     property region : String?
     property channel : String = ""
+    getter? has_next_page : Bool = false
 
     # Flag that indicates if the smart search features have been disabled.
     @inhibit_ssf : Bool = false
@@ -118,6 +121,7 @@ module Invidious::Search
     # Returns either the results or an empty array of `SearchItem`.
     def process(user : Invidious::User? = nil, *, hide_shorts : Bool? = nil) : Array(SearchItem) | Array(ChannelVideo)
       items = [] of SearchItem
+      @has_next_page = false
 
       # Don't bother going further if search query is empty
       return items if self.empty_raw_query?
@@ -126,18 +130,24 @@ module Invidious::Search
 
       case @type
       when .regular?, .playlist?
-        items = Processors.regular(self, hide_shorts: youtube_hide_shorts)
+        items = filter_youtube_items(Processors.regular(self), hide_shorts: youtube_hide_shorts)
         #
       when .channel?
-        items = Processors.channel(self, hide_shorts: youtube_hide_shorts)
+        items = filter_youtube_items(Processors.channel(self), hide_shorts: youtube_hide_shorts)
         #
       when .subscriptions?
         if user
           items = Processors.subscriptions(self, user.as(Invidious::User))
+          @has_next_page = items.size >= PAGE_SIZE
         end
       end
 
       return items
+    end
+
+    def filter_youtube_items(items : Array(SearchItem), *, hide_shorts : Bool) : Array(SearchItem)
+      @has_next_page = items.size >= PAGE_SIZE
+      Invidious::Shorts.filter_search_items(items, hide_shorts: hide_shorts)
     end
 
     # Return the HTTP::Params corresponding to this Query (invidious format)
