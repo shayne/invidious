@@ -122,12 +122,14 @@ module Invidious::Search
       # Don't bother going further if search query is empty
       return items if self.empty_raw_query?
 
+      hide_shorts = user.try(&.preferences.hide_shorts) || false
+
       case @type
       when .regular?, .playlist?
-        items = Processors.regular(self)
+        items = Processors.regular(self, hide_shorts: hide_shorts)
         #
       when .channel?
-        items = Processors.channel(self)
+        items = Processors.channel(self, hide_shorts: hide_shorts)
         #
       when .subscriptions?
         if user

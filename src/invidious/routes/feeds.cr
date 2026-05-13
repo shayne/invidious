@@ -32,12 +32,13 @@ module Invidious::Routes::Feeds
   end
 
   def self.popular(env)
-    locale = env.get("preferences").as(Preferences).locale
+    preferences = env.get("preferences").as(Preferences)
+    locale = preferences.locale
 
     if CONFIG.popular_enabled
       popular_range = Invidious::Popular.parse_range(env.params.query["range"]?)
       popular_range_options = Invidious::Popular::RANGES
-      popular_videos = popular_videos(popular_range)
+      popular_videos = popular_videos(popular_range, hide_shorts: preferences.hide_shorts)
 
       templated "feeds/popular"
     else

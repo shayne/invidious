@@ -129,6 +129,10 @@ module Invidious::Popular
     cache
   end
 
+  def self.filter_videos(videos : Array(ChannelVideo), *, hide_shorts : Bool) : Array(ChannelVideo)
+    Invidious::Shorts.filter_channel_videos(videos, hide_shorts: hide_shorts)
+  end
+
   def self.score(candidate : Candidate, now : Time = Time.utc) : Float64
     current_views = candidate.video.views || 0_i64
     age_seconds = (now - candidate.video.published).total_seconds

@@ -193,8 +193,13 @@ Invidious::Jobs.register Invidious::Jobs::InstanceListRefreshJob.new
 
 Invidious::Jobs.start_all
 
-def popular_videos(range : Invidious::Popular::Range = Invidious::Popular::Range::Day)
-  Invidious::Jobs::PullPopularVideosJob::POPULAR_VIDEOS.get[range]? || [] of ChannelVideo
+def popular_videos(
+  range : Invidious::Popular::Range = Invidious::Popular::Range::Day,
+  *,
+  hide_shorts : Bool = false,
+)
+  videos = Invidious::Jobs::PullPopularVideosJob::POPULAR_VIDEOS.get[range]? || [] of ChannelVideo
+  Invidious::Popular.filter_videos(videos, hide_shorts: hide_shorts)
 end
 
 # Routing

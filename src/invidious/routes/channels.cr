@@ -59,6 +59,11 @@ module Invidious::Routes::Channels
       end
     end
 
+    preferences = env.get("preferences").as(Preferences)
+    if items.is_a?(Array(SearchItem))
+      items = Invidious::Shorts.filter_search_items(items, hide_shorts: preferences.hide_shorts)
+    end
+
     selected_tab = Frontend::ChannelPage::TabsAvailable::Videos
     templated "channel"
   end

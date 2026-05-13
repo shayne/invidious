@@ -13,7 +13,7 @@ module Invidious::Frontend::ChannelPage
     Channels
   end
 
-  def generate_tabs_links(locale : String, channel : AboutChannel, selected_tab : TabsAvailable)
+  def generate_tabs_links(locale : String, channel : AboutChannel, selected_tab : TabsAvailable, *, hide_shorts : Bool = false)
     return String.build(1500) do |str|
       base_url = "/channel/#{channel.ucid}"
 
@@ -22,6 +22,7 @@ module Invidious::Frontend::ChannelPage
         next if (tab.playlists? && channel.auto_generated)
 
         tab_name = tab.to_s.downcase
+        next if hide_shorts && tab.shorts?
 
         if channel.tabs.includes? tab_name
           str << %(<div class="pure-u-1 pure-md-1-3">\n)

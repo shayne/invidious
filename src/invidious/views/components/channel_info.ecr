@@ -46,7 +46,7 @@
             <a href="<%= redirect_url %>"><%= I18n.translate(locale, "Switch Invidious Instance") %></a>
         </div>
 
-        <%= Invidious::Frontend::ChannelPage.generate_tabs_links(locale, channel, selected_tab) %>
+        <%= Invidious::Frontend::ChannelPage.generate_tabs_links(locale, channel, selected_tab, hide_shorts: env.get("preferences").as(Preferences).hide_shorts) %>
     </div>
     <div class="pure-u-1-2">
         <div class="pure-g" style="text-align:end">

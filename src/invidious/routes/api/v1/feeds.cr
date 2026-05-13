@@ -25,7 +25,8 @@ module Invidious::Routes::API::V1::Feeds
   end
 
   def self.popular(env)
-    locale = env.get("preferences").as(Preferences).locale
+    preferences = env.get("preferences").as(Preferences)
+    locale = preferences.locale
 
     env.response.content_type = "application/json"
 
@@ -38,7 +39,7 @@ module Invidious::Routes::API::V1::Feeds
 
     JSON.build do |json|
       json.array do
-        popular_videos(popular_range).each do |video|
+        popular_videos(popular_range, hide_shorts: preferences.hide_shorts).each do |video|
           video.to_json(locale, json)
         end
       end

@@ -141,7 +141,8 @@ module Invidious::Routes::API::V1::Channels
   end
 
   def self.videos(env)
-    locale = env.get("preferences").as(Preferences).locale
+    preferences = env.get("preferences").as(Preferences)
+    locale = preferences.locale
     ucid = env.params.url["ucid"]
 
     env.response.content_type = "application/json"
@@ -171,6 +172,10 @@ module Invidious::Routes::API::V1::Channels
       rescue ex
         return error_json(500, ex)
       end
+    end
+
+    if videos.is_a?(Array(SearchItem))
+      videos = Invidious::Shorts.filter_search_items(videos, hide_shorts: preferences.hide_shorts)
     end
 
     return JSON.build do |json|

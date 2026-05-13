@@ -109,6 +109,22 @@ Spectator.describe Invidious::Shorts do
   end
 end
 
+Spectator.describe Invidious::Shorts do
+  describe ".filter_search_items" do
+    it "filters confirmed Shorts and preserves unknown SearchVideos and non-video items" do
+      items = [
+        shorts_search_video("short", true),
+        shorts_search_video("unknown", nil),
+        shorts_search_video("normal", false),
+      ] of SearchItem
+
+      filtered = described_class.filter_search_items(items, hide_shorts: true)
+
+      expect(filtered.map { |item| item.as(SearchVideo).id }).to eq(["unknown", "normal"])
+    end
+  end
+end
+
 Spectator.describe SearchVideo do
   it "defaults isShort to unknown when constructor omits is_short" do
     video = SearchVideo.new({
