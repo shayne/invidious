@@ -21,7 +21,35 @@ struct ChannelVideo
   property live_now : Bool = false
   property premiere_timestamp : Time? = nil
   property views : Int64? = nil
+
+  @[DB::Field(ignore: true)]
   property is_short : Bool? = nil
+
+  def initialize(tuple : NamedTuple(
+                   id: String,
+                   title: String,
+                   published: Time,
+                   updated: Time,
+                   ucid: String,
+                   author: String,
+                   length_seconds: Int32,
+                   live_now: Bool,
+                   premiere_timestamp: Time?,
+                   views: Int64?,
+                   is_short: Bool?,
+                 ))
+    @id = tuple[:id]
+    @title = tuple[:title]
+    @published = tuple[:published]
+    @updated = tuple[:updated]
+    @ucid = tuple[:ucid]
+    @author = tuple[:author]
+    @length_seconds = tuple[:length_seconds]
+    @live_now = tuple[:live_now]
+    @premiere_timestamp = tuple[:premiere_timestamp]
+    @views = tuple[:views]
+    @is_short = tuple[:is_short]
+  end
 
   def initialize(tuple : NamedTuple(
                    id: String,
@@ -120,7 +148,9 @@ struct ChannelVideo
   def to_tuple
     {% begin %}
       {
-        {{@type.instance_vars.map(&.name).splat}}
+        {{@type.instance_vars
+            .reject { |var| var.annotation(::DB::Field) && var.annotation(::DB::Field)[:ignore] }
+            .map(&.name).splat}}
       }
     {% end %}
   end
