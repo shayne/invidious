@@ -81,6 +81,7 @@ module Invidious::Popular
     property live_now : Bool = false
     property premiere_timestamp : Time? = nil
     property views : Int64? = nil
+    property is_short : Bool? = nil
     property local_subscription_count : Int64
     property baseline_48h : Float64
     property baseline_sample_count : Int64
@@ -98,6 +99,7 @@ module Invidious::Popular
           live_now:           @live_now,
           premiere_timestamp: @premiere_timestamp,
           views:              @views,
+          is_short:           @is_short,
         }),
         local_subscription_count: @local_subscription_count,
         baseline_48h: @baseline_48h,

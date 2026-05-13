@@ -22,7 +22,6 @@ struct ChannelVideo
   property premiere_timestamp : Time? = nil
   property views : Int64? = nil
 
-  @[DB::Field(ignore: true)]
   property is_short : Bool? = nil
 
   def initialize(tuple : NamedTuple(

@@ -100,22 +100,33 @@ module Invidious::Database::ChannelVideos
 
   # This function returns the status of the query (i.e: success?)
   def insert(video : ChannelVideo, with_premiere_timestamp : Bool = false) : Bool
-    if with_premiere_timestamp
-      last_items = "premiere_timestamp = $9, views = $10"
-    else
-      last_items = "views = $10"
-    end
+    return PG_DB.query_one(insert_query(with_premiere_timestamp), *video.to_tuple, as: Bool)
+  end
 
-    request = <<-SQL
+  def insert_query(with_premiere_timestamp : Bool) : String
+    premiere_assignment =
+      if with_premiere_timestamp
+        "premiere_timestamp = $9,"
+      else
+        ""
+      end
+
+    <<-SQL
       INSERT INTO channel_videos
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+        (id, title, published, updated, ucid, author, length_seconds, live_now, premiere_timestamp, views, is_short)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
       ON CONFLICT (id) DO UPDATE
       SET title = $2, published = $3, updated = $4, ucid = $5,
-          author = $6, length_seconds = $7, live_now = $8, #{last_items}
+          author = $6, length_seconds = $7, live_now = $8,
+          #{premiere_assignment}
+          views = $10,
+          is_short = CASE
+            WHEN $11 IS NULL THEN channel_videos.is_short
+            WHEN channel_videos.is_short IS TRUE AND $11 IS FALSE THEN TRUE
+            ELSE $11
+          END
       RETURNING (xmax=0) AS was_insert
     SQL
-
-    return PG_DB.query_one(request, *video.to_tuple, as: Bool)
   end
 
   # -------------------
@@ -145,6 +156,51 @@ module Invidious::Database::ChannelVideos
     return PG_DB.query_all(request, ucid, since, as: ChannelVideo)
   end
 
+  def select_unclassified_shorts_channels_query : String
+    <<-SQL
+      SELECT ucid
+      FROM channel_videos
+      WHERE is_short IS NULL
+        AND ucid IS NOT NULL
+        AND ucid != ''
+        AND published >= now() - interval '180 days'
+      GROUP BY ucid
+      ORDER BY MAX(published) DESC
+      LIMIT $1
+    SQL
+  end
+
+  def select_unclassified_shorts_channels(limit : Int32) : Array(String)
+    PG_DB.query_all(select_unclassified_shorts_channels_query, limit, as: String)
+  end
+
+  def mark_shorts_query : String
+    <<-SQL
+      UPDATE channel_videos
+      SET is_short = TRUE
+      WHERE id = ANY($1)
+    SQL
+  end
+
+  def mark_shorts(ids : Array(String)) : Nil
+    return if ids.empty?
+    PG_DB.exec(mark_shorts_query, ids)
+  end
+
+  def mark_non_shorts_query : String
+    <<-SQL
+      UPDATE channel_videos
+      SET is_short = FALSE
+      WHERE id = ANY($1)
+        AND is_short IS NULL
+    SQL
+  end
+
+  def mark_non_shorts(ids : Array(String)) : Nil
+    return if ids.empty?
+    PG_DB.exec(mark_non_shorts_query, ids)
+  end
+
   def popular_candidates_query : String
     <<-SQL
       WITH subscribed_channels AS (
@@ -167,6 +223,7 @@ module Invidious::Database::ChannelVideos
         cv.live_now,
         cv.premiere_timestamp,
         cv.views,
+        cv.is_short,
         sc.local_subscription_count,
         COALESCE(baseline.baseline_48h, NULLIF(cv.views, 0), 1)::float8 AS baseline_48h,
         COALESCE(baseline.sample_count, 0)::bigint AS baseline_sample_count
@@ -184,6 +241,7 @@ module Invidious::Database::ChannelVideos
             AND cv2.views > 0
             AND cv2.published < now() - interval '48 hours'
             AND cv2.published >= now() - interval '180 days'
+            AND cv2.is_short IS DISTINCT FROM TRUE
           ORDER BY cv2.published DESC
           LIMIT 20
         ) sample

@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS public.channel_videos
   live_now boolean,
   premiere_timestamp timestamp with time zone,
   views bigint,
+  is_short boolean,
   CONSTRAINT channel_videos_id_key UNIQUE (id)
 );
 
@@ -36,3 +37,13 @@ CREATE INDEX IF NOT EXISTS channel_videos_ucid_published_idx
   ON public.channel_videos
   USING btree
   (ucid COLLATE pg_catalog."default", published DESC);
+
+-- Index: public.channel_videos_ucid_published_not_shorts_idx
+
+-- DROP INDEX public.channel_videos_ucid_published_not_shorts_idx;
+
+CREATE INDEX IF NOT EXISTS channel_videos_ucid_published_not_shorts_idx
+  ON public.channel_videos
+  USING btree
+  (ucid COLLATE pg_catalog."default", published DESC)
+  WHERE is_short IS DISTINCT FROM TRUE;

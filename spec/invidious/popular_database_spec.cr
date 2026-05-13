@@ -37,5 +37,17 @@ Spectator.describe Invidious::Database::ChannelVideos do
 
       expect(query.includes?("cv.published >= now() - ($1::interval)")).to be_true
     end
+
+    it "selects Shorts metadata for candidate rows" do
+      query = described_class.popular_candidates_query
+
+      expect(query.includes?("cv.is_short")).to be_true
+    end
+
+    it "excludes confirmed Shorts from baseline samples" do
+      query = described_class.popular_candidates_query
+
+      expect(query.includes?("cv2.is_short IS DISTINCT FROM TRUE")).to be_true
+    end
   end
 end
