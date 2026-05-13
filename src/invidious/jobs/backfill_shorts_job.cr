@@ -1,6 +1,6 @@
 class Invidious::Jobs::BackfillShortsJob < Invidious::Jobs::BaseJob
   CHANNEL_BATCH_SIZE = 10
-  PAGE_LIMIT         = 2
+  PAGE_LIMIT         =  2
   CHANNEL_SLEEP      = 2.seconds
   IDLE_SLEEP         = 1.hour
 
