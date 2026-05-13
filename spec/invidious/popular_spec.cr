@@ -268,6 +268,7 @@ Spectator.describe Invidious::Popular do
         live_now:                 false,
         premiere_timestamp:       nil,
         views:                    nil,
+        is_short:                 true,
         local_subscription_count: 17_i64,
         baseline_48h:             123.5,
         baseline_sample_count:    4_i64,
@@ -276,6 +277,7 @@ Spectator.describe Invidious::Popular do
       candidate = row.to_candidate
 
       expect(candidate.video.views).to be_nil
+      expect(candidate.video.is_short).to be_true
       expect(candidate.local_subscription_count).to eq(17_i64)
       expect(candidate.baseline_48h).to eq(123.5)
       expect(candidate.baseline_sample_count).to eq(4_i64)
