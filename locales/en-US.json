@@ -134,6 +134,7 @@
     "Only show latest unwatched video from channel: ": "Only show latest unwatched video from channel: ",
     "preferences_unseen_only_label": "Only show unwatched: ",
     "preferences_notifications_only_label": "Only show notifications (if there are any): ",
+    "preferences_hide_shorts_label": "Hide YouTube Shorts",
     "Enable web notifications": "Enable web notifications",
     "`x` uploaded a video": "`x` uploaded a video",
     "`x` is live": "`x` is live",

@@ -922,6 +922,14 @@ default_user_preferences:
   #notifications_only: false
 
   ##
+  ## Hide confirmed YouTube Shorts from mixed feeds and results.
+  ##
+  ## Accepted values: true, false
+  ## Default: false
+  ##
+  #hide_shorts: false
+
+  ##
   ## In the "Subscription" feed, Only show the videos that the
   ## user haven't watched yet (i.e which are not in their watch
   ## history).

@@ -46,6 +46,7 @@ struct Preferences
   property default_home : String? = CONFIG.default_user_preferences.default_home
   property feed_menu : Array(String) = CONFIG.default_user_preferences.feed_menu
   property related_videos : Bool = CONFIG.default_user_preferences.related_videos
+  property hide_shorts : Bool = CONFIG.default_user_preferences.hide_shorts
 
   @[JSON::Field(converter: Preferences::ProcessString)]
   property sort : String = CONFIG.default_user_preferences.sort

@@ -99,6 +99,10 @@ module Invidious::Routes::PreferencesRoute
     related_videos ||= "off"
     related_videos = related_videos == "on"
 
+    hide_shorts = env.params.body["hide_shorts"]?.try &.as(String)
+    hide_shorts ||= "off"
+    hide_shorts = hide_shorts == "on"
+
     default_home = env.params.body["default_home"]?.try &.as(String) || CONFIG.default_user_preferences.default_home
 
     feed_menu = [] of String
@@ -171,6 +175,7 @@ module Invidious::Routes::PreferencesRoute
       automatic_instance_redirect: automatic_instance_redirect,
       region:                      region,
       related_videos:              related_videos,
+      hide_shorts:                 hide_shorts,
       sort:                        sort,
       speed:                       speed,
       thin_mode:                   thin_mode,

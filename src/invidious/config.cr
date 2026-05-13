@@ -42,6 +42,7 @@ struct ConfigPreferences
   property automatic_instance_redirect : Bool = false
   property region : String = "US"
   property related_videos : Bool = true
+  property hide_shorts : Bool = false
   property sort : String = "published"
   property speed : Float32 = 1.0_f32
   property thin_mode : Bool = false

@@ -268,6 +268,14 @@
                     <input name="notifications_only" id="notifications_only" type="checkbox" <% if preferences.notifications_only %>checked<% end %>>
                 </div>
 
+                <% end %>
+
+                <div class="pure-control-group">
+                    <label for="hide_shorts"><%= I18n.translate(locale, "preferences_hide_shorts_label") %></label>
+                    <input name="hide_shorts" id="hide_shorts" type="checkbox" <% if preferences.hide_shorts %>checked<% end %>>
+                </div>
+
+                <% if CONFIG.enable_user_notifications %>
                 <% # Web notifications are only supported over HTTPS %>
                 <% if Kemal.config.ssl || CONFIG.https_only %>
                     <div class="pure-control-group">
