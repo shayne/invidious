@@ -23,6 +23,31 @@ struct ChannelVideo
   property views : Int64? = nil
   property is_short : Bool? = nil
 
+  def initialize(tuple : NamedTuple(
+                   id: String,
+                   title: String,
+                   published: Time,
+                   updated: Time,
+                   ucid: String,
+                   author: String,
+                   length_seconds: Int32,
+                   live_now: Bool,
+                   premiere_timestamp: Time?,
+                   views: Int64?,
+                 ))
+    @id = tuple[:id]
+    @title = tuple[:title]
+    @published = tuple[:published]
+    @updated = tuple[:updated]
+    @ucid = tuple[:ucid]
+    @author = tuple[:author]
+    @length_seconds = tuple[:length_seconds]
+    @live_now = tuple[:live_now]
+    @premiere_timestamp = tuple[:premiere_timestamp]
+    @views = tuple[:views]
+    @is_short = nil
+  end
+
   def to_json(locale, json : JSON::Builder)
     json.object do
       json.field "type", "shortVideo"

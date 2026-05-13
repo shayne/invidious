@@ -110,6 +110,25 @@ Spectator.describe Invidious::Shorts do
 end
 
 Spectator.describe SearchVideo do
+  it "defaults isShort to unknown when constructor omits is_short" do
+    video = SearchVideo.new({
+      title:              "Video legacy",
+      id:                 "legacy",
+      author:             "Author",
+      ucid:               "UClegacy",
+      published:          Time.utc(2026, 5, 12, 12, 0, 0),
+      views:              100_i64,
+      description_html:   "",
+      length_seconds:     60,
+      premiere_timestamp: nil,
+      author_verified:    false,
+      author_thumbnail:   nil,
+      badges:             VideoBadges::None,
+    })
+
+    expect(video.is_short).to be_nil
+  end
+
   it "serializes isShort as true, false, and null" do
     expect(JSON.parse(shorts_search_video("short", true).to_json("en-US", nil))["isShort"].as_bool).to be_true
     expect(JSON.parse(shorts_search_video("normal", false).to_json("en-US", nil))["isShort"].as_bool).to be_false
@@ -118,6 +137,23 @@ Spectator.describe SearchVideo do
 end
 
 Spectator.describe ChannelVideo do
+  it "defaults isShort to unknown when constructor omits is_short" do
+    video = ChannelVideo.new({
+      id:                 "legacy",
+      title:              "Video legacy",
+      published:          Time.utc(2026, 5, 12, 12, 0, 0),
+      updated:            Time.utc(2026, 5, 12, 12, 0, 0),
+      ucid:               "UClegacy",
+      author:             "Author",
+      length_seconds:     60,
+      live_now:           false,
+      premiere_timestamp: nil,
+      views:              100_i64,
+    })
+
+    expect(video.is_short).to be_nil
+  end
+
   it "serializes a dedicated nullable isShort field without changing type" do
     json = JSON.parse(shorts_channel_video("short", true).to_json("en-US"))
 

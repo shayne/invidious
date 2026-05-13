@@ -30,6 +30,35 @@ struct SearchVideo
   property badges : VideoBadges
   property is_short : Bool? = nil
 
+  def initialize(tuple : NamedTuple(
+                   title: String,
+                   id: String,
+                   author: String,
+                   ucid: String,
+                   published: Time,
+                   views: Int64,
+                   description_html: String,
+                   length_seconds: Int32,
+                   premiere_timestamp: Time?,
+                   author_verified: Bool,
+                   author_thumbnail: String?,
+                   badges: VideoBadges,
+                 ))
+    @title = tuple[:title]
+    @id = tuple[:id]
+    @author = tuple[:author]
+    @ucid = tuple[:ucid]
+    @published = tuple[:published]
+    @views = tuple[:views]
+    @description_html = tuple[:description_html]
+    @length_seconds = tuple[:length_seconds]
+    @premiere_timestamp = tuple[:premiere_timestamp]
+    @author_verified = tuple[:author_verified]
+    @author_thumbnail = tuple[:author_thumbnail]
+    @badges = tuple[:badges]
+    @is_short = nil
+  end
+
   def with_is_short(value : Bool?) : SearchVideo
     SearchVideo.new({
       title:              self.title,
