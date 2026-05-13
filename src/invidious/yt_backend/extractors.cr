@@ -106,10 +106,16 @@ private module Parsers
       # The length information generally exist in "lengthText". However, the info can sometimes
       # be retrieved from "thumbnailOverlays" (e.g when the video is a "shorts" one).
       is_short = nil
+      overlay_length_container = item_contents["thumbnailOverlays"]?.try &.as_a.find(&.["thumbnailOverlayTimeStatusRenderer"]?)
+
+      if overlay_length_container
+        length_text = overlay_length_container.dig?("thumbnailOverlayTimeStatusRenderer", "text", "simpleText")
+        is_short = true if length_text.try &.as_s == "SHORTS"
+      end
 
       if length_container = item_contents["lengthText"]?
         length_seconds = decode_length_seconds(length_container["simpleText"].as_s)
-      elsif length_container = item_contents["thumbnailOverlays"]?.try &.as_a.find(&.["thumbnailOverlayTimeStatusRenderer"]?)
+      elsif length_container = overlay_length_container
         # This needs to only go down the `simpleText` path (if possible). If more situations came up that requires
         # a specific pathway then we should add an argument to extract_text that'll make this possible
         length_text = length_container.dig?("thumbnailOverlayTimeStatusRenderer", "text", "simpleText")
@@ -119,7 +125,6 @@ private module Parsers
 
           if length_text == "SHORTS"
             # Approximate length to one minute, as "shorts" generally don't exceed that length.
-            is_short = true
             length_seconds = 60_i32
           else
             length_seconds = decode_length_seconds(length_text)

@@ -79,6 +79,26 @@ Spectator.describe "YouTube Shorts extraction" do
     expect(item.as(SearchVideo).is_short).to eq(true)
   end
 
+  it "marks videoRenderer with lengthText and exact SHORTS overlay as Shorts" do
+    item = parse_search_item(%({
+      "videoRenderer": {
+        "videoId": "SHORTBOTH01",
+        "title": { "runs": [{ "text": "Overlay short with length" }] },
+        "ownerText": { "runs": [{ "text": "Fallback Author", "navigationEndpoint": { "browseEndpoint": { "browseId": "UCFALLBACK" } } }] },
+        "publishedTimeText": { "simpleText": "1 day ago" },
+        "viewCountText": { "simpleText": "123 views" },
+        "lengthText": { "simpleText": "12:34" },
+        "thumbnailOverlays": [{
+          "thumbnailOverlayTimeStatusRenderer": {
+            "text": { "simpleText": "SHORTS" }
+          }
+        }]
+      }
+    }))
+
+    expect(item.as(SearchVideo).is_short).to eq(true)
+  end
+
   it "marks ordinary videoRenderer results as unknown until tab context confirms them" do
     item = parse_search_item(%({
       "videoRenderer": {
