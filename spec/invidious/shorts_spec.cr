@@ -161,7 +161,7 @@ Spectator.describe ChannelVideo do
     expect(json["isShort"].as_bool).to be_true
   end
 
-  it "keeps isShort out of the database tuple until the schema supports it" do
+  it "keeps isShort in the database tuple for the channel_videos schema" do
     video = shorts_channel_video("short", true)
 
     expect(ChannelVideo.type_array).to eq([
@@ -175,8 +175,9 @@ Spectator.describe ChannelVideo do
       "live_now",
       "premiere_timestamp",
       "views",
+      "is_short",
     ])
-    expect(video.to_tuple.size).to eq(10)
+    expect(video.to_tuple.size).to eq(11)
     expect(video.to_tuple).to eq({
       video.id,
       video.title,
@@ -188,6 +189,7 @@ Spectator.describe ChannelVideo do
       video.live_now,
       video.premiere_timestamp,
       video.views,
+      video.is_short,
     })
   end
 end
