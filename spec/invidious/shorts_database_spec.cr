@@ -29,6 +29,13 @@ Spectator.describe Invidious::Database::ChannelVideos do
       expect(query.includes?("ORDER BY MAX(published) DESC")).to be_true
       expect(query.includes?("LIMIT $1")).to be_true
     end
+
+    it "limits backfill scope to recent unknown rows" do
+      query = described_class.select_unclassified_shorts_channels_query
+
+      expect(query.includes?("published >= now() - interval '180 days'")).to be_true
+      expect(query.includes?("is_short IS NULL")).to be_true
+    end
   end
 
   describe ".mark_shorts_query" do

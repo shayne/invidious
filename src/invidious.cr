@@ -183,6 +183,8 @@ if CONFIG.popular_enabled
   Invidious::Jobs.register Invidious::Jobs::PullPopularVideosJob.new(PG_DB)
 end
 
+Invidious::Jobs.register Invidious::Jobs::BackfillShortsJob.new
+
 NOTIFICATION_CHANNEL = ::Channel(VideoNotification).new(32)
 CONNECTION_CHANNEL   = ::Channel({Bool, ::Channel(PQ::Notification)}).new(32)
 Invidious::Jobs.register Invidious::Jobs::NotificationJob.new(NOTIFICATION_CHANNEL, CONNECTION_CHANNEL, CONFIG.database_url)
