@@ -1,3 +1,5 @@
+require "../jsonify/api_v1/common"
+
 @[Flags]
 enum VideoBadges
   LiveNow
@@ -26,6 +28,25 @@ struct SearchVideo
   property author_verified : Bool
   property author_thumbnail : String?
   property badges : VideoBadges
+  property is_short : Bool? = nil
+
+  def with_is_short(value : Bool?) : SearchVideo
+    SearchVideo.new({
+      title:              self.title,
+      id:                 self.id,
+      author:             self.author,
+      ucid:               self.ucid,
+      published:          self.published,
+      views:              self.views,
+      description_html:   self.description_html,
+      length_seconds:     self.length_seconds,
+      premiere_timestamp: self.premiere_timestamp,
+      author_verified:    self.author_verified,
+      author_thumbnail:   self.author_thumbnail,
+      badges:             self.badges,
+      is_short:           value,
+    })
+  end
 
   def to_xml(auto_generated, query_params, xml : XML::Builder)
     query_params["v"] = self.id
@@ -81,6 +102,7 @@ struct SearchVideo
   def to_json(locale : String?, json : JSON::Builder)
     json.object do
       json.field "type", "video"
+      json.field "isShort", self.is_short
       json.field "title", self.title
       json.field "videoId", self.id
 

@@ -21,10 +21,12 @@ struct ChannelVideo
   property live_now : Bool = false
   property premiere_timestamp : Time? = nil
   property views : Int64? = nil
+  property is_short : Bool? = nil
 
   def to_json(locale, json : JSON::Builder)
     json.object do
       json.field "type", "shortVideo"
+      json.field "isShort", self.is_short
 
       json.field "title", self.title
       json.field "videoId", self.id
