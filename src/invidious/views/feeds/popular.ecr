@@ -11,24 +11,18 @@
 
 <%= rendered "components/feed_menu" %>
 
-<div class="pure-g h-box">
-    <div class="pure-u-1">
-        <nav aria-label="<%= I18n.translate(locale, "Popular") %>">
-            <div class="pure-g" style="text-align:right">
-                <% popular_range_options.each do |range_option| %>
-                    <div class="pure-u-1 pure-md-1-4">
-                        <% if popular_range == range_option %>
-                            <b aria-current="page"><%= I18n.translate(locale, range_option.label_key) %></b>
-                        <% else %>
-                            <a href="/feed/popular?range=<%= range_option.key %>">
-                                <%= I18n.translate(locale, range_option.label_key) %>
-                            </a>
-                        <% end %>
-                    </div>
-                <% end %>
-            </div>
-        </nav>
-    </div>
+<div class="h-box">
+    <nav class="popular-range-selector" aria-label="<%= I18n.translate(locale, "Popular") %>">
+        <% popular_range_options.each do |range_option| %>
+            <% if popular_range == range_option %>
+                <b class="popular-range-option" aria-current="page"><%= I18n.translate(locale, range_option.label_key) %></b>
+            <% else %>
+                <a class="popular-range-option" href="/feed/popular?range=<%= range_option.key %>">
+                    <%= I18n.translate(locale, range_option.label_key) %>
+                </a>
+            <% end %>
+        <% end %>
+    </nav>
 </div>
 
 <div class="h-box">

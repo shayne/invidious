@@ -39,6 +39,20 @@ body {
   margin: 0.5em 0 1em 0;
 }
 
+.popular-range-selector {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.35em 1em;
+  text-align: right;
+}
+
+.popular-range-option {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
 /* A flex container */
 .flexible {
   display: flex;
