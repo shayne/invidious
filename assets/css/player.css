@@ -116,12 +116,16 @@ ul.vjs-menu-content::-webkit-scrollbar {
   order: 5;
 }
 
+.vjs-expand-control {
+  order: 7;
+}
+
 .vjs-share-control {
   order: 6;
 }
 
 .vjs-fullscreen-control {
-  order: 7;
+  order: 8;
 }
 
 .vjs-playback-rate > .vjs-menu {
@@ -236,6 +240,45 @@ video.video-js {
   margin-right: 1em;
   padding-bottom: 82vh;
   height: 0;
+}
+
+body.watch-player-expanded #player-container {
+  box-sizing: border-box;
+  width: 100vw;
+  max-width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+  padding-bottom: 0;
+  height: auto;
+  aspect-ratio: var(--player-aspect-ratio, 16 / 9);
+  background-color: #000;
+}
+
+body.watch-player-expanded #player-container .video-js,
+body.watch-player-expanded #player-container .player-dimensions.vjs-fluid {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100% !important;
+  height: 100% !important;
+  padding-top: 0;
+}
+
+body.watch-player-expanded #player-container .vjs-tech {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain;
+}
+
+body.watch-player-expanded #player-container .vjs-poster {
+  background-size: contain;
+  object-fit: contain;
+}
+
+.video-js .vjs-expand-control .icon {
+  font-size: 1.5em;
+  line-height: 2;
+  pointer-events: none;
 }
 
 .mobile-operations-bar {

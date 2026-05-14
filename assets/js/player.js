@@ -23,6 +23,7 @@ var options = {
             'audioTrackButton',
             'qualitySelector',
             'playbackRateMenuButton',
+            'expandToggle',
             'fullscreenToggle'
         ]
     },
@@ -37,6 +38,132 @@ var options = {
 if (player_data.aspect_ratio) {
     options.aspectRatio = player_data.aspect_ratio;
 }
+
+var expand_player_storage_key = 'watch_player_expanded';
+var expand_player_body_class = 'watch-player-expanded';
+
+function getWatchPlayerContainer() {
+    return document.getElementById('player-container');
+}
+
+function canExpandPlayer() {
+    return !!getWatchPlayerContainer() && !video_data.params.listen;
+}
+
+function getPlayerAspectRatioCSSValue() {
+    var aspectRatio = player_data.aspect_ratio || '16:9';
+    var parts = aspectRatio.split(':').map(function (part) {return parseFloat(part);});
+
+    if (parts.length !== 2 || !parts[0] || !parts[1]) {
+        return '16 / 9';
+    }
+
+    return parts[0] + ' / ' + parts[1];
+}
+
+function setExpandablePlayerAspectRatio() {
+    var container = getWatchPlayerContainer();
+    if (container) {
+        container.style.setProperty('--player-aspect-ratio', getPlayerAspectRatioCSSValue());
+    }
+}
+
+function isPlayerExpanded() {
+    return document.body.classList.contains(expand_player_body_class);
+}
+
+function syncExpandToggleButton() {
+    var button = document.querySelector('.vjs-expand-control');
+    if (!button) return;
+
+    var expanded = isPlayerExpanded();
+    var controlText = expanded ? 'Collapse player' : 'Expand player';
+    var icon = button.querySelector('.icon');
+    var text = button.querySelector('.vjs-control-text');
+
+    if (expanded) {
+        button.classList.add('vjs-expanded');
+    } else {
+        button.classList.remove('vjs-expanded');
+    }
+
+    button.setAttribute('aria-pressed', expanded ? 'true' : 'false');
+    button.setAttribute('title', controlText);
+
+    if (text) text.textContent = controlText;
+    if (icon) {
+        if (expanded) {
+            icon.classList.remove('ion-md-expand');
+            icon.classList.add('ion-md-contract');
+        } else {
+            icon.classList.remove('ion-md-contract');
+            icon.classList.add('ion-md-expand');
+        }
+    }
+}
+
+function setPlayerExpanded(expanded, persist) {
+    if (!canExpandPlayer()) return;
+
+    setExpandablePlayerAspectRatio();
+
+    if (expanded) {
+        document.body.classList.add(expand_player_body_class);
+    } else {
+        document.body.classList.remove(expand_player_body_class);
+    }
+
+    if (persist) {
+        helpers.storage.set(expand_player_storage_key, expanded);
+    }
+
+    syncExpandToggleButton();
+
+    if (typeof player !== 'undefined' && player.trigger) {
+        player.trigger('playerresize');
+    }
+}
+
+function restoreExpandedPlayer() {
+    if (!canExpandPlayer()) return;
+
+    setPlayerExpanded(helpers.storage.get(expand_player_storage_key) === true, false);
+}
+
+function registerExpandToggle() {
+    var Button = videojs.getComponent('Button');
+
+    var ExpandToggle = videojs.extend(Button, {
+        constructor: function (player, options) {
+            Button.call(this, player, options);
+
+            this.controlText('Expand player');
+            this.el().setAttribute('aria-pressed', 'false');
+
+            var icon = document.createElement('i');
+            icon.className = 'icon ion-md-expand';
+            icon.setAttribute('aria-hidden', 'true');
+            this.el().appendChild(icon);
+
+            if (!canExpandPlayer()) {
+                this.hide();
+            }
+        },
+
+        buildCSSClass: function () {
+            return 'vjs-expand-control ' + Button.prototype.buildCSSClass.call(this);
+        },
+
+        handleClick: function (event) {
+            setPlayerExpanded(!isPlayerExpanded(), true);
+        }
+    });
+
+    videojs.registerComponent('ExpandToggle', ExpandToggle);
+}
+
+registerExpandToggle();
+restoreExpandedPlayer();
 
 var embed_url = new URL(location);
 embed_url.searchParams.delete('v');
@@ -55,6 +182,7 @@ videojs.Vhs.xhr.beforeRequest = function(options) {
 };
 
 var player = videojs('player', options);
+syncExpandToggleButton();
 
 player.on('error', function () {
     if (video_data.params.quality === 'dash') return;
