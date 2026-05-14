@@ -1,3 +1,17 @@
+# Shayne's Invidious Fork
+
+This fork tracks upstream [Invidious](https://github.com/iv-org/invidious) and adds opinionated features for a personalized, self-hosted instance. The rest of this README is the upstream Invidious README.
+
+## Fork Features
+
+- **Published fork container image:** CI publishes multi-arch AMD64/ARM64 images to `ghcr.io/shayne/invidious:master` for direct deployment from this fork.
+- **Smarter Popular tab:** Popular videos are ranked with a nowcast scorer over the local subscription graph instead of relying on upstream's default popular feed.
+- **Popular time ranges:** The Popular tab includes `Last 2 days`, `Last week`, `Last 2 weeks`, and `Last month` ranges, with a compact right-aligned selector.
+- **All-subscribed-channel discovery:** Popular candidates are selected from all locally subscribed channels so smaller subscribed channels are not missed by a top-channel cutoff.
+- **YouTube Shorts filtering:** A per-user `Hide YouTube Shorts` preference filters confirmed Shorts from channel, search, feed, and popular surfaces.
+- **Durable Shorts classification:** Shorts/non-Shorts state is stored in the database and backfilled from explicit YouTube Shorts and Videos channel tabs instead of relying only on URL or length heuristics.
+- **Expandable watch player:** The built-in player has an `Expand` mode that makes the watch-page video edge-to-edge while preserving aspect ratio, separate from fullscreen.
+
 <div align="center">
   <img src="assets/invidious-colored-vector.svg" width="192" height="192" alt="Invidious logo">
   <h1>Invidious</h1>
