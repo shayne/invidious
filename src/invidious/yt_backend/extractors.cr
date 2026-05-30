@@ -639,13 +639,14 @@ private module Parsers
     end
   end
 
-  # Parses an InnerTube lockupViewModel into a SearchPlaylist.
+  # Parses an InnerTube lockupViewModel into a SearchPlaylist or a SearchVideo
   # Returns nil when the given object is not a lockupViewModel.
   #
   # This structure is present since November 2024 on the "podcasts" and
   # "playlists" tabs of the channel page. It is usually encapsulated in either
   # a richItemRenderer or a richGridRenderer.
   #
+  # Since 2026-05-21, now channel videos are encapsulated in a lockupViewModel.
   module LockupViewModelParser
     extend self
     include BaseParser
@@ -657,7 +658,9 @@ private module Parsers
     end
 
     private def parse_internal(item_contents, author_fallback)
-      if item_contents["contentType"]?.try &.as_s == "LOCKUP_CONTENT_TYPE_VIDEO"
+      content_type = item_contents["contentType"]?.try &.as_s
+
+      if content_type == "LOCKUP_CONTENT_TYPE_VIDEO"
         return self.parse_video(item_contents, author_fallback)
       end
 
@@ -703,25 +706,45 @@ private module Parsers
     end
 
     private def parse_playlist(item_contents, author_fallback)
-      playlist_id = item_contents["contentId"].as_s
-
       thumbnail_view_model = item_contents.dig(
-        "contentImage", "thumbnailViewModel"
+        "contentImage", "collectionThumbnailViewModel",
+        "primaryThumbnail", "thumbnailViewModel"
       )
-
       thumbnail = thumbnail_view_model.dig("image", "sources", 0, "url").as_s
 
+      playlist_id = item_contents["contentId"].as_s
+
       # This complicated sequences tries to extract the following data structure:
-      # "overlays": [{
-      #   "thumbnailOverlayBadgeViewModel": {
-      #     "thumbnailBadges": [{
-      #       "thumbnailBadgeViewModel": {
-      #         "text": "430 episodes",
-      #         "badgeStyle": "THUMBNAIL_OVERLAY_BADGE_STYLE_DEFAULT"
-      #       }
-      #     }]
-      #   }
-      # }]
+      #
+      # "overlays": [
+      #   {
+      #     "thumbnailOverlayBadgeViewModel": {
+      #       "thumbnailBadges": [
+      #         {
+      #           "thumbnailBadgeViewModel": {
+      #             "icon": {
+      #               "sources": [
+      #                 {
+      #                   "clientResource": {
+      #                     "imageName": "BROADCAST"
+      #                   }
+      #                 }
+      #               ]
+      #             },
+      #             "text": "5 episodes",
+      #             "badgeStyle": "THUMBNAIL_OVERLAY_BADGE_STYLE_DEFAULT",
+      #             "backgroundColor": {
+      #               "lightTheme": 991526,
+      #               "darkTheme": 991526
+      #             }
+      #           }
+      #         }
+      #       ],
+      #       "position": "THUMBNAIL_OVERLAY_BADGE_POSITION_BOTTOM_END"
+      #     }
+      #   },
+      #   ... <-- There is another item bellow the Object we use to extract episodes/videos
+      # ]
       #
       # NOTE: this simplistic `.to_i` conversion might not work on larger
       # playlists and hasn't been tested.
@@ -729,12 +752,73 @@ private module Parsers
         .compact_map(&.dig?("thumbnailOverlayBadgeViewModel", "thumbnailBadges").try &.as_a)
         .flatten
         .find(nil, &.dig?("thumbnailBadgeViewModel", "text").try { |node|
-          {"episodes", "videos"}.any? { |str| node.as_s.ends_with?(str) }
+          {"episodes", "videos", "lessons"}.any? { |str| node.as_s.ends_with?(str) }
         })
         .try &.dig("thumbnailBadgeViewModel", "text").as_s.to_i(strict: false)
 
       metadata = item_contents.dig("metadata", "lockupMetadataViewModel")
       title = metadata.dig("title", "content").as_s
+
+      # metadataParts is not always in the first place of the metadataRows array, therefore,
+      # we search for it iterating the array. We have only seen metadataRows with at least
+      # 2 items inside it.
+      #
+      # It looks like this:
+      # "metadataRows": [
+      #     {}, <-- empty Object
+      #     {
+      #       "metadataParts": [ ... ] <-- metadataParts with the information we are searching for.
+      #     }
+      # ]
+      #
+      # Playlist on channels also contain metadataRows, but not with the type of data we are searching
+      # for which are the channel name and channel ID, instead they have two fields depending of the playlist
+      # updated date:
+      #
+      # It looks like this:
+      # "metadataRows": [
+      #     {
+      #         "metadataParts": [
+      #             {
+      #                 "text": {
+      #                     "content": "Updated 4 days ago"
+      #                 }
+      #             } <-- This object is missing if the playlist has not been updated in around 7
+      #                   days
+      #         ]
+      #     },
+      #     {
+      #         "metadataParts": [
+      #             {
+      #                 "text": {
+      #                     "content": "View full playlist",
+      #                     "commandRuns": [ ... ],
+      #                     "styleRuns": [ ... ].
+      #                 }
+      #             } <-- This object is always present, so we use this to determine if the
+      #                   metadataParts can be used or not.
+      #         ]
+      #     }
+      # ]
+      #
+      metadata_rows = metadata.dig?("metadata", "contentMetadataViewModel", "metadataRows").try &.as_a
+      metadata_parts = metadata_rows.try &.find { |row|
+        parts = row["metadataParts"]?.try &.as_a
+        parts && !parts.any? { |item| item.dig?("text", "content").try &.as_s == "View full playlist" }
+      }.try &.["metadataParts"].as_a
+
+      if author_info = metadata_parts.try &.find(&.dig?("text", "commandRuns"))
+           .try &.["text"]
+        author = author_info["content"].as_s
+        author_id = author_info.dig?("commandRuns", 0, "onTap", "innertubeCommand", "browseEndpoint", "browseId")
+          .try &.as_s || author_fallback.id
+        author_verified = (author_info.dig?("attachmentRuns", 0, "element", "type", "imageType", "image", "sources", 0, "clientResource", "imageName")
+          .try &.as_s) == "CHECK_CIRCLE_FILLED" || false
+      else
+        author = author_fallback.name
+        author_id = author_fallback.id
+        author_verified = false
+      end
 
       # TODO: Retrieve "updated" info from metadata parts
       # rows = metadata.dig("metadata", "contentMetadataViewModel", "metadataRows").as_a
@@ -748,12 +832,12 @@ private module Parsers
       return SearchPlaylist.new({
         title:           title,
         id:              playlist_id,
-        author:          author_fallback.name,
-        ucid:            author_fallback.id,
+        author:          author,
+        ucid:            author_id,
         video_count:     video_count || -1,
         videos:          [] of SearchPlaylistVideo,
         thumbnail:       thumbnail,
-        author_verified: false,
+        author_verified: author_verified,
       })
     end
 
