@@ -11,7 +11,7 @@
 
 <%= rendered "components/feed_menu" %>
 
-<div class="h-box">
+<div class="h-box popular-controls">
     <nav class="popular-range-selector" aria-label="<%= I18n.translate(locale, "Popular") %>">
         <% popular_range_options.each do |range_option| %>
             <% if popular_range == range_option %>
@@ -25,11 +25,7 @@
     </nav>
 </div>
 
-<div class="h-box">
-    <hr>
-</div>
-
-<div class="pure-g">
+<div class="pure-g popular-grid">
 <% popular_videos.each do |item| %>
     <%= rendered "components/item" %>
 <% end %>
