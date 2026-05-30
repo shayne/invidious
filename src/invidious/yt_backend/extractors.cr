@@ -658,6 +658,52 @@ private module Parsers
     end
 
     private def parse_internal(item_contents, author_fallback)
+      if item_contents["contentType"]?.try &.as_s == "LOCKUP_CONTENT_TYPE_VIDEO"
+        return self.parse_video(item_contents, author_fallback)
+      end
+
+      return self.parse_playlist(item_contents, author_fallback)
+    end
+
+    private def parse_video(item_contents, author_fallback)
+      video_id = item_contents["contentId"].as_s
+
+      thumbnail_view_model = item_contents.dig(
+        "contentImage", "thumbnailViewModel"
+      )
+
+      duration_text = self.extract_duration_text(thumbnail_view_model)
+      is_short = duration_text == "SHORTS" ? true : nil
+      duration = is_short ? 60_i32 : decode_length_seconds(duration_text || "")
+
+      metadata = item_contents.dig("metadata", "lockupMetadataViewModel")
+      title = metadata.dig("title", "content").as_s
+      metadata_parts = self.extract_metadata_parts(metadata)
+
+      view_count_text = metadata_parts.find { |text| text.includes?("view") }
+      view_count = short_text_to_number(view_count_text || "0")
+
+      published_text = metadata_parts.find { |text| text.includes?("ago") }
+      published = published_text ? decode_date(published_text) : Time.utc
+
+      SearchVideo.new({
+        title:              title,
+        id:                 video_id,
+        author:             author_fallback.name,
+        ucid:               author_fallback.id,
+        published:          published,
+        views:              view_count,
+        description_html:   "",
+        length_seconds:     duration,
+        premiere_timestamp: nil,
+        author_verified:    false,
+        author_thumbnail:   nil,
+        badges:             VideoBadges::None,
+        is_short:           is_short,
+      })
+    end
+
+    private def parse_playlist(item_contents, author_fallback)
       playlist_id = item_contents["contentId"].as_s
 
       thumbnail_view_model = item_contents.dig(
@@ -710,6 +756,37 @@ private module Parsers
         thumbnail:       thumbnail,
         author_verified: false,
       })
+    end
+
+    private def extract_duration_text(thumbnail_view_model) : String?
+      thumbnail_view_model["overlays"]?.try &.as_a.each do |overlay|
+        badges = overlay
+          .dig?("thumbnailBottomOverlayViewModel", "badges")
+          .try &.as_a
+
+        badges.try &.each do |badge|
+          text = badge
+            .dig?("thumbnailBadgeViewModel", "text")
+            .try &.as_s
+
+          return text if text
+        end
+      end
+    end
+
+    private def extract_metadata_parts(metadata) : Array(String)
+      parts = [] of String
+
+      metadata
+        .dig?("metadata", "contentMetadataViewModel", "metadataRows")
+        .try &.as_a.each do |row|
+          row["metadataParts"]?.try &.as_a.each do |part|
+            text = part.dig?("text", "content").try &.as_s
+            parts << text if text
+          end
+        end
+
+      return parts
     end
 
     def self.parser_name

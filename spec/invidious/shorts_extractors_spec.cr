@@ -113,4 +113,68 @@ Spectator.describe "YouTube Shorts extraction" do
 
     expect(item.as(SearchVideo).is_short).to be_nil
   end
+
+  it "parses normal video lockupViewModel duration from thumbnail bottom overlays" do
+    item = parse_search_item(%({
+      "lockupViewModel": {
+        "contentId": "NORMALLOCK1",
+        "contentType": "LOCKUP_CONTENT_TYPE_VIDEO",
+        "contentImage": {
+          "thumbnailViewModel": {
+            "image": {
+              "sources": [{
+                "url": "https://i.ytimg.com/vi/NORMALLOCK1/hqdefault.jpg",
+                "width": 168,
+                "height": 94
+              }]
+            },
+            "overlays": [{
+              "thumbnailBottomOverlayViewModel": {
+                "badges": [{
+                  "thumbnailBadgeViewModel": {
+                    "text": "12:34"
+                  }
+                }]
+              }
+            }]
+          }
+        },
+        "metadata": {
+          "lockupMetadataViewModel": {
+            "title": { "content": "Normal lockup video" },
+            "metadata": {
+              "contentMetadataViewModel": {
+                "metadataRows": [{
+                  "metadataParts": [
+                    { "text": { "content": "1.2K views" } },
+                    { "text": { "content": "1 day ago" } }
+                  ]
+                }]
+              }
+            }
+          }
+        },
+        "rendererContext": {
+          "commandContext": {
+            "onTap": {
+              "innertubeCommand": {
+                "watchEndpoint": {
+                  "videoId": "NORMALLOCK1"
+                }
+              }
+            }
+          }
+        }
+      }
+    }))
+
+    video = item.as(SearchVideo)
+    expect(video.id).to eq("NORMALLOCK1")
+    expect(video.title).to eq("Normal lockup video")
+    expect(video.length_seconds).to eq(754)
+    expect(video.views).to eq(1200)
+    expect(video.ucid).to eq("UCFALLBACK")
+    expect(video.author).to eq("Fallback Author")
+    expect(video.is_short).to be_nil
+  end
 end
