@@ -108,21 +108,19 @@ private module Parsers
       is_short = nil
       overlay_length_container = item_contents["thumbnailOverlays"]?.try &.as_a.find(&.["thumbnailOverlayTimeStatusRenderer"]?)
       overlay_time_status_text = overlay_length_container.try do |container|
-        container.dig?("thumbnailOverlayTimeStatusRenderer", "text", "simpleText").try &.as_s
+        extract_text(container.dig?("thumbnailOverlayTimeStatusRenderer", "text"))
       end
 
       is_short = true if overlay_time_status_text == "SHORTS"
 
       if length_container = item_contents["lengthText"]?
         length_seconds = decode_length_seconds(length_container["simpleText"].as_s)
-      elsif length_container = overlay_length_container
+      elsif overlay_length_container
         # This needs to only go down the `simpleText` path (if possible). If more situations came up that requires
         # a specific pathway then we should add an argument to extract_text that'll make this possible
-        length_text = length_container.dig?("thumbnailOverlayTimeStatusRenderer", "text", "simpleText")
+        length_text = overlay_time_status_text
 
         if length_text
-          length_text = length_text.as_s
-
           if length_text == "SHORTS"
             # Approximate length to one minute, as "shorts" generally don't exceed that length.
             length_seconds = 60_i32

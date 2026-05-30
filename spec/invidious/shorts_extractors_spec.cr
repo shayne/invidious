@@ -108,7 +108,9 @@ Spectator.describe "YouTube Shorts extraction" do
         "viewCountText": { "runs": [{ "text": "123" }, { "text": " watching" }] },
         "thumbnailOverlays": [{
           "thumbnailOverlayTimeStatusRenderer": {
-            "text": { "simpleText": "LIVE" }
+            "text": { "runs": [{ "text": "LIVE" }] },
+            "style": "LIVE",
+            "icon": { "iconType": "LIVE" }
           }
         }]
       }
