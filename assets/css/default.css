@@ -73,38 +73,38 @@ body {
   cursor: default;
 }
 
-.popular-grid {
+.feed-grid {
   row-gap: 1.15em;
   padding: 0 0.5em 1.5em;
   box-sizing: border-box;
 }
 
-.popular-grid > .pure-u-1 > .h-box {
+.feed-grid > .pure-u-1 > .h-box {
   padding: 0 0.5em 0.75em;
 }
 
-.popular-grid div.thumbnail {
+.feed-grid div.thumbnail {
   overflow: hidden;
   border-radius: 12px;
   background-color: rgba(127, 127, 127, 0.12);
 }
 
-.popular-grid img.thumbnail {
+.feed-grid img.thumbnail {
   transition: transform 180ms ease-out;
 }
 
-.popular-grid > .pure-u-1 > .h-box:hover img.thumbnail {
+.feed-grid > .pure-u-1 > .h-box:hover img.thumbnail {
   transform: scale(1.015);
 }
 
-.popular-grid div.thumbnail > .bottom-right-overlay {
+.feed-grid div.thumbnail > .bottom-right-overlay {
   right: 8px;
   bottom: 8px;
   font-size: 0.85rem;
   line-height: 1;
 }
 
-.popular-grid .length {
+.feed-grid .length {
   display: inline-flex;
   align-items: center;
   min-height: 18px;
@@ -119,15 +119,15 @@ body {
   line-height: 1.15;
 }
 
-.popular-grid .video-card-row {
+.feed-grid .video-card-row {
   margin: 8px 0 0;
 }
 
-.popular-grid .video-card-row p {
+.feed-grid .video-card-row p {
   margin: 0;
 }
 
-.popular-grid .video-card-row > a[href^="/watch?"] > p {
+.feed-grid .video-card-row > a[href^="/watch?"] > p {
   display: -webkit-box;
   overflow: hidden;
   font-size: 0.98rem;
@@ -137,13 +137,13 @@ body {
   -webkit-line-clamp: 2;
 }
 
-.popular-grid p.channel-name {
+.feed-grid p.channel-name {
   color: #aaa;
   font-size: 0.9rem;
   line-height: 1.35;
 }
 
-.popular-grid p.video-data {
+.feed-grid p.video-data {
   color: #aaa;
   font-size: 0.86rem;
   font-weight: 400;
@@ -700,12 +700,12 @@ span > select {
   background-color: #0f0f0f;
 }
 
-.light-theme .popular-grid .video-card-row > a[href^="/watch?"] > p {
+.light-theme .feed-grid .video-card-row > a[href^="/watch?"] > p {
   color: #0f0f0f;
 }
 
-.light-theme .popular-grid p.channel-name,
-.light-theme .popular-grid p.video-data {
+.light-theme .feed-grid p.channel-name,
+.light-theme .feed-grid p.video-data {
   color: #606060;
 }
 
@@ -778,12 +778,12 @@ span > select {
     background-color: #0f0f0f;
   }
 
-  .no-theme .popular-grid .video-card-row > a[href^="/watch?"] > p {
+  .no-theme .feed-grid .video-card-row > a[href^="/watch?"] > p {
     color: #0f0f0f;
   }
 
-  .no-theme .popular-grid p.channel-name,
-  .no-theme .popular-grid p.video-data {
+  .no-theme .feed-grid p.channel-name,
+  .no-theme .feed-grid p.video-data {
     color: #606060;
   }
 }
@@ -870,7 +870,7 @@ body.dark-theme {
   background-color: #f1f1f1;
 }
 
-.dark-theme .popular-grid .video-card-row > a[href^="/watch?"] > p {
+.dark-theme .feed-grid .video-card-row > a[href^="/watch?"] > p {
   color: #f1f1f1;
 }
 
@@ -958,7 +958,7 @@ body.dark-theme {
     background-color: #f1f1f1;
   }
 
-  .no-theme .popular-grid .video-card-row > a[href^="/watch?"] > p {
+  .no-theme .feed-grid .video-card-row > a[href^="/watch?"] > p {
     color: #f1f1f1;
   }
 }

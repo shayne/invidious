@@ -35,7 +35,7 @@
     </div>
 <% end %>
 
-<div class="pure-g">
+<div class="pure-g feed-grid">
 <% notifications.each do |item| %>
     <%= rendered "components/item" %>
 <% end %>
@@ -57,7 +57,7 @@
 <script src="/js/watched_widget.js"></script>
 
 
-<div class="pure-g">
+<div class="pure-g feed-grid">
 <% videos.each do |item| %>
     <%= rendered "components/item" %>
 <% end %>

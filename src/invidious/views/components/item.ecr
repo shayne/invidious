@@ -2,6 +2,7 @@
   thin_mode = env.get("preferences").as(Preferences).thin_mode
   item_watched = !item.is_a?(SearchChannel | SearchHashtag | SearchPlaylist | InvidiousPlaylist | Category | ProblematicTimelineItem) && env.get?("user").try &.as(User).watched.index(item.id) != nil
   author_verified = item.responds_to?(:author_verified) && item.author_verified
+  item_live_now = (item.responds_to?(:live_now) && item.live_now) || (item.is_a?(SearchVideo) && item.badges.live_now?)
 -%>
 
 <div class="pure-u-1 pure-u-md-1-4">
@@ -167,7 +168,7 @@
                 </div>
 
                 <div class="bottom-right-overlay">
-                    <%- if item.responds_to?(:live_now) && item.live_now -%>
+                    <%- if item_live_now -%>
                         <p class="length" dir="auto"><i class="icon ion-ios-play-circle"></i>&nbsp;<%= I18n.translate(locale, "LIVE") %></p>
                     <%- elsif item.length_seconds != 0 -%>
                         <p class="length"><%= recode_length_seconds(item.length_seconds) %></p>
