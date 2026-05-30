@@ -107,11 +107,11 @@ private module Parsers
       # be retrieved from "thumbnailOverlays" (e.g when the video is a "shorts" one).
       is_short = nil
       overlay_length_container = item_contents["thumbnailOverlays"]?.try &.as_a.find(&.["thumbnailOverlayTimeStatusRenderer"]?)
-
-      if overlay_length_container
-        length_text = overlay_length_container.dig?("thumbnailOverlayTimeStatusRenderer", "text", "simpleText")
-        is_short = true if length_text.try &.as_s == "SHORTS"
+      overlay_time_status_text = overlay_length_container.try do |container|
+        container.dig?("thumbnailOverlayTimeStatusRenderer", "text", "simpleText").try &.as_s
       end
+
+      is_short = true if overlay_time_status_text == "SHORTS"
 
       if length_container = item_contents["lengthText"]?
         length_seconds = decode_length_seconds(length_container["simpleText"].as_s)
@@ -138,6 +138,7 @@ private module Parsers
 
       premiere_timestamp = item_contents.dig?("upcomingEventData", "startTime").try { |t| Time.unix(t.as_s.to_i64) }
       badges = VideoBadges::None
+      badges |= VideoBadges::LiveNow if overlay_time_status_text == "LIVE"
       item_contents["badges"]?.try &.as_a.each do |badge|
         b = badge["metadataBadgeRenderer"]
         case b["label"]?.try &.as_s

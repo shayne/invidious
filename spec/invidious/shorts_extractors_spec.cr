@@ -99,6 +99,27 @@ Spectator.describe "YouTube Shorts extraction" do
     expect(item.as(SearchVideo).is_short).to eq(true)
   end
 
+  it "marks videoRenderer with LIVE overlay as live now" do
+    item = parse_search_item(%({
+      "videoRenderer": {
+        "videoId": "LIVEOVER01",
+        "title": { "runs": [{ "text": "Live video" }] },
+        "ownerText": { "runs": [{ "text": "Fallback Author", "navigationEndpoint": { "browseEndpoint": { "browseId": "UCFALLBACK" } } }] },
+        "viewCountText": { "runs": [{ "text": "123" }, { "text": " watching" }] },
+        "thumbnailOverlays": [{
+          "thumbnailOverlayTimeStatusRenderer": {
+            "text": { "simpleText": "LIVE" }
+          }
+        }]
+      }
+    }))
+
+    video = item.as(SearchVideo)
+    expect(video.badges.live_now?).to be_true
+    expect(video.length_seconds).to eq(0)
+    expect(video.is_short).to be_nil
+  end
+
   it "marks ordinary videoRenderer results as unknown until tab context confirms them" do
     item = parse_search_item(%({
       "videoRenderer": {
