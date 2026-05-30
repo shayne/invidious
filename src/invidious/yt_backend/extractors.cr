@@ -680,10 +680,10 @@ private module Parsers
       title = metadata.dig("title", "content").as_s
       metadata_parts = self.extract_metadata_parts(metadata)
 
-      view_count_text = metadata_parts.find { |text| text.includes?("view") }
+      view_count_text = metadata_parts.find(&.includes?("view"))
       view_count = short_text_to_number(view_count_text || "0")
 
-      published_text = metadata_parts.find { |text| text.includes?("ago") }
+      published_text = metadata_parts.find(&.includes?("ago"))
       published = published_text ? decode_date(published_text) : Time.utc
 
       SearchVideo.new({

@@ -162,7 +162,7 @@ module Invidious::Popular
   def self.rank(candidates : Array(Candidate), now : Time = Time.utc) : Array(RankedVideo)
     candidates
       .map { |candidate| RankedVideo.new(video: candidate.video, score: score(candidate, now)) }
-      .sort do |left, right|
+      .sort! do |left, right|
         score_cmp = right.score <=> left.score
         score_cmp == 0 ? right.video.published <=> left.video.published : score_cmp
       end
