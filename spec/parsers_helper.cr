@@ -19,8 +19,13 @@ require "../src/invidious/helpers/serialized_yt_data"
 require "../src/invidious/yt_backend/extractors"
 require "../src/invidious/yt_backend/extractors_utils"
 
-OUTPUT = File.open(File::NULL, "w")
-LOGGER = Invidious::LogHandler.new(OUTPUT, LogLevel::Off)
+{% unless @top_level.has_constant?(:OUTPUT) %}
+  OUTPUT = File.open(File::NULL, "w")
+{% end %}
+
+{% unless @top_level.has_constant?(:LOGGER) %}
+  LOGGER = Invidious::LogHandler.new(OUTPUT, LogLevel::Off)
+{% end %}
 
 def load_mock(file) : Hash(String, JSON::Any)
   file = File.join(__DIR__, "..", "mocks", file + ".json")
