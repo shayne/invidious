@@ -19,7 +19,7 @@ class Invidious::Jobs::BackfillShortsJob < Invidious::Jobs::BaseJob
   end
 
   private def backfill_channel(ucid : String) : Nil
-    channel = get_about_info(ucid, CONFIG.default_user_preferences.locale)
+    channel = get_about_info(ucid)
 
     short_ids = collect_tab_video_ids(channel, shorts: true)
     Invidious::Database::ChannelVideos.mark_shorts(short_ids)
