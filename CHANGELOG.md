@@ -1,5 +1,7 @@
 # CHANGELOG
 
+## vX.Y.0 (future)
+
 ## v2.20260905.0
 
 This release brings the fork up to date with upstream Invidious while retaining its Popular ranking and time ranges, persistent Shorts filtering, and expandable watch player.
