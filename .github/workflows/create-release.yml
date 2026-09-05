@@ -24,7 +24,7 @@ on:
       model:
         description: "Model used to write the changelog."
         required: false
-        default: "deepseek/deepseek-v4-pro"
+        default: "deepseek/deepseek-v4-flash-0731"
       base_url:
         description: "OpenAI-compatible API base URL (default: OpenRouter)."
         required: false
@@ -38,13 +38,13 @@ jobs:
   prepare-release:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           ref: master
           fetch-depth: 0
           fetch-tags: true
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.x"
 

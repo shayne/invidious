@@ -1,7 +1,154 @@
 # CHANGELOG
 
-## vX.Y.0 (future)
+## v2.20260905.0
 
+This release brings the fork up to date with upstream Invidious while retaining its Popular ranking and time ranges, persistent Shorts filtering, and expandable watch player.
+
+### Meaningful upstream changes
+
+- Fixed YouTube comment rendering on videos and community posts, including author thumbnails and unexpected comment-filter entries.
+- Added a clear message when YouTube comments are turned off, with an option to try Reddit comments.
+- Fixed misplaced links and timestamps in video descriptions containing emoji or other supplementary Unicode characters.
+- Added SOCKS5/SOCKS5h outbound proxy support, proxy-side DNS resolution, and optional proxy authentication.
+- Added configurable Video.js target and maximum buffer lengths for watch and embedded players.
+- Enabled Belarusian, Galician, Swiss German, Armenian, Latvian, and Uzbek, alongside translation updates across existing languages.
+- Restored debug information in container builds for useful crash reports and stack traces.
+- Added a Nix development environment and updated the container compiler to Crystal 1.21.0.
+
+This also includes the upstream YouTube compatibility fixes and correction for videos incorrectly marked as upcoming that were synced after the previous fork tag, v2.20260630.0.
+
+### Container images
+
+AMD64 and ARM64 images are published together at `ghcr.io/shayne/invidious:2.20260905.0` and `ghcr.io/shayne/invidious:latest`.
+
+### Upstream pull requests since the previous fork release
+
+- chore(deps): bump nixpkgs from `56c02bc` to `34ab990` in /nix (#6006) (https://github.com/iv-org/invidious/pull/6006)
+- chore(deps): bump actions/checkout from 6 to 7 (#5996) (https://github.com/iv-org/invidious/pull/5996)
+- chore(deps): bump nixpkgs from `ffb3c9b` to `56c02bc` in /nix (#5997) (https://github.com/iv-org/invidious/pull/5997)
+- chore(deps): bump nixpkgs from `0e251e2` to `ec2d622` in /nix (#5968) (https://github.com/iv-org/invidious/pull/5968)
+- chore(deps): bump actions/checkout from 6 to 7 (#5782) (https://github.com/iv-org/invidious/pull/5782)
+- chore: Add myself to assignees for Dependabot PRs (#5972) (https://github.com/iv-org/invidious/pull/5972)
+- chore: removed unused `locale` argument in `#get_about_info` function (#5902) (https://github.com/iv-org/invidious/pull/5902)
+- chore(deps): bump nixpkgs from `b7c2ada` to `2fcb964` in /nix (#5939) (https://github.com/iv-org/invidious/pull/5939)
+- chore(deps): bump int128/docker-manifest-create-action (#5938) (https://github.com/iv-org/invidious/pull/5938)
+- chore(deps): bump 84codes/crystal in /docker (#5937) (https://github.com/iv-org/invidious/pull/5937)
+- Ban the use of AI to write to and/or address another Human (#5930) (https://github.com/iv-org/invidious/pull/5930)
+- Update Spanish translation (#5919) (https://github.com/iv-org/invidious/pull/5919)
+- Translations update from Hosted Weblate (#5892) (https://github.com/iv-org/invidious/pull/5892)
+- chore(deps): bump nixpkgs from `148bab9` to `6438090` in /nix (#5907) (https://github.com/iv-org/invidious/pull/5907)
+- Various enhancements and addition to the AI policy (#5904) (https://github.com/iv-org/invidious/pull/5904)
+- CI: Do not build OpenSSL tests and apps (#5897) (https://github.com/iv-org/invidious/pull/5897)
+- Release v2.20260804.1 (#5896) (https://github.com/iv-org/invidious/pull/5896)
+- fix: pass `-no-pie` link flag argument to include debug information again for OCI (#5895) (https://github.com/iv-org/invidious/pull/5895)
+- Release v2.20260804.0 (#5893) (https://github.com/iv-org/invidious/pull/5893)
+- CI: Exclude development dependencies from build job (#5860) (https://github.com/iv-org/invidious/pull/5860)
+- Enable the Uzbek since it's been translated at more than 20% (#5891) (https://github.com/iv-org/invidious/pull/5891)
+- Translations update from Hosted Weblate (#5881) (https://github.com/iv-org/invidious/pull/5881)
+- Switch to deepseek/deepseek-v4-flash-0731 for the release script (#5886) (https://github.com/iv-org/invidious/pull/5886)
+- chore(deps): bump actions/stale from 10 to 11 (#5890) (https://github.com/iv-org/invidious/pull/5890)
+- feat: add support for SOCKS5 proxy (#5865) (https://github.com/iv-org/invidious/pull/5865)
+- feat: allow setting videojs max buffer length via config.yml (#5876) (https://github.com/iv-org/invidious/pull/5876)
+- fix: fix rendered links and timestamps in video descriptions (#5878) (https://github.com/iv-org/invidious/pull/5878)
+- Show message when comments are turned off (#4051) (https://github.com/iv-org/invidious/pull/4051)
+- Enable the new locales translated at more than 20% (#5882) (https://github.com/iv-org/invidious/pull/5882)
+- fix: also fix comments community posts. (#5874) (https://github.com/iv-org/invidious/pull/5874)
+- chore: remove `-Dpreview_mt` from Makefile as it has been deprecated by the Crystal compiler. (#5872) (https://github.com/iv-org/invidious/pull/5872)
+- Translations update from Hosted Weblate (#5474) (https://github.com/iv-org/invidious/pull/5474)
+- fix: skip non comment `commentFilterContextViewModel` key in comments (#5870) (https://github.com/iv-org/invidious/pull/5870)
+- fix: fix comments html rendering (#5862) (https://github.com/iv-org/invidious/pull/5862)
+- chore: Move nix files out of root directory (#5861) (https://github.com/iv-org/invidious/pull/5861)
+- CI: Pin Crystal to 1.20.3 for linting task so ameba can build (#5859) (https://github.com/iv-org/invidious/pull/5859)
+- chore: Add Nix development files (#5856) (https://github.com/iv-org/invidious/pull/5856)
+- Remove the awesome humane tech badge (#5853) (https://github.com/iv-org/invidious/pull/5853)
+- Update the AI policy to properly ban AI slop (#5849) (https://github.com/iv-org/invidious/pull/5849)
+- chore(deps): bump actions/setup-python from 5 to 7 (#5829) (https://github.com/iv-org/invidious/pull/5829)
+- Release v2.20260723.0 (#5824) (https://github.com/iv-org/invidious/pull/5824)
+- feat: add release script + trigger from github action (#5823) (https://github.com/iv-org/invidious/pull/5823)
+- Hotfix - Fix YouTube change(#5818) (https://github.com/iv-org/invidious/pull/5818)
+- Hotfix - Fix YouTube change (#5819) (https://github.com/iv-org/invidious/pull/5819)
+- chore: update openssl to 3.6.3 in OCI (#5808) (https://github.com/iv-org/invidious/pull/5808)
+- chore(deps): bump int128/docker-manifest-create-action (#5807) (https://github.com/iv-org/invidious/pull/5807)
+- Various enhancements and rewording to the issues/PRs templates (#5804) (https://github.com/iv-org/invidious/pull/5804)
+- Add a field for AI policy compliance in the issues/PRs templates (#5803) (https://github.com/iv-org/invidious/pull/5803)
+- Fix videos being incorrectly labelled as isUpcoming = true (#5800) (https://github.com/iv-org/invidious/pull/5800)
+- chore(deps): bump 84codes/crystal in /docker (#5797) (https://github.com/iv-org/invidious/pull/5797)
+- Create AI_POLICY.md (#5791) (https://github.com/iv-org/invidious/pull/5791)
+
+## v2.20260804.1
+
+### Wrap-up
+
+This patch release fixes a regression in the OCI (container) build that omitted debug information, making it harder to diagnose issues in production. The fix ensures that the `-no-pie` link flag is passed correctly, restoring debug symbols for better stack traces and crash analysis.
+
+No new features are included in this release; it is solely focused on improving the debuggability of containerized instances.
+
+### Bugs fixed
+#### For instance owners
+  - Debug information is now included again in OCI images by passing the `-no-pie` link flag correctly (#5895)
+
+### Full list of pull requests merged since the last release (newest first)
+
+* fix: pass `-no-pie` link flag argument to include debug information again for OCI (https://github.com/iv-org/invidious/pull/5895, by @Fijxu)
+* Release v2.20260804.0 (https://github.com/iv-org/invidious/pull/5893, by @github-actions[bot])
+
+## v2.20260804.0
+
+### Wrap-up
+
+This release focuses on fixing comment rendering, adding new configuration options for instance owners, and streamlining developer tooling. Comments in videos and community posts now render correctly again, a message appears when comments are disabled, and several new locales were made available to users.
+
+Instance owners gain SOCKS5 proxy support and the ability to set the videojs max buffer length via config.yml. Developer experience improves with Nix development files, a pinned Crystal version for linting, and an updated AI policy that properly bans AI slop.
+
+### New features & important changes
+#### For Users
+  - A message is now shown when comments are turned off (#4051)
+  - New locales translated at more than 20% are now made available to users, this includes Belarusian, Galician, Swiss German, Armenian, Latvian and Uzbek (#5891, #5882)
+
+#### For instance owners
+  - SOCKS5 proxy support was added (#5865)
+  - The videojs max buffer length can now be set via config.yml (#5876)
+
+#### For developers
+  - Nix development files were added (#5856, #5861)
+  - The Makefile no longer uses the deprecated `-Dpreview_mt` flag (#5872)
+  - Crystal was pinned to 1.20.3 for the linting task so Ameba can build (#5859)
+  - The release script now uses deepseek/deepseek-v4-flash-0731 (#5886)
+  - The AI policy was updated to properly ban AI slop (#5849)
+  - The awesome humane tech badge was removed (#5853)
+  - Development dependencies were excluded from the CI build job (#5860)
+  - CI dependencies were bumped: `actions/stale` to 11 and `actions/setup-python` to 7 (#5890, #5829)
+
+### Bugs fixed
+#### User-side
+  - Rendered links and timestamps in video descriptions were fixed (#5878)
+  - Comments HTML rendering was fixed (#5862)
+  - Comments in community posts were fixed (#5874)
+  - Non-comment `commentFilterContextViewModel` keys are now skipped in comments (#5870)
+
+### Full list of pull requests merged since the last release (newest first)
+
+* CI: Exclude development dependencies from build job (https://github.com/iv-org/invidious/pull/5860, by @Fijxu)
+* Enable the Uzbek since it's been translated at more than 20% (https://github.com/iv-org/invidious/pull/5891, by @TheFrenchGhosty)
+* Translations update from Hosted Weblate (https://github.com/iv-org/invidious/pull/5881, by @weblate)
+* Switch to deepseek/deepseek-v4-flash-0731 for the release script (https://github.com/iv-org/invidious/pull/5886, by @TheFrenchGhosty)
+* chore(deps): bump actions/stale from 10 to 11 (https://github.com/iv-org/invidious/pull/5890, by @dependabot[bot])
+* feat: add support for SOCKS5 proxy (https://github.com/iv-org/invidious/pull/5865, by @unixfox)
+* feat: allow setting videojs max buffer length via config.yml (https://github.com/iv-org/invidious/pull/5876, by @Fijxu)
+* fix: fix rendered links and timestamps in video descriptions (https://github.com/iv-org/invidious/pull/5878, by @Fijxu)
+* Show message when comments are turned off (https://github.com/iv-org/invidious/pull/4051, by @syeopite)
+* Enable the new locales translated at more than 20% (https://github.com/iv-org/invidious/pull/5882, by @TheFrenchGhosty)
+* fix: also fix comments in community posts (https://github.com/iv-org/invidious/pull/5874, by @Fijxu)
+* chore: remove `-Dpreview_mt` from Makefile as it has been deprecated by the Crystal compiler. (https://github.com/iv-org/invidious/pull/5872, by @Fijxu)
+* Translations update from Hosted Weblate (https://github.com/iv-org/invidious/pull/5474, by @weblate)
+* fix: skip non comment `commentFilterContextViewModel` key in comments (https://github.com/iv-org/invidious/pull/5870, by @Fijxu)
+* fix: fix comments html rendering (https://github.com/iv-org/invidious/pull/5862, by @Fijxu)
+* chore: Move nix files out of root directory (https://github.com/iv-org/invidious/pull/5861, by @Fijxu)
+* CI: Pin Crystal to 1.20.3 for linting task so ameba can build (https://github.com/iv-org/invidious/pull/5859, by @Fijxu)
+* chore: Add Nix development files (https://github.com/iv-org/invidious/pull/5856, by @Fijxu)
+* Remove the awesome humane tech badge (https://github.com/iv-org/invidious/pull/5853, by @TheFrenchGhosty)
+* Update the AI policy to properly ban AI slop (https://github.com/iv-org/invidious/pull/5849, by @TheFrenchGhosty)
+* chore(deps): bump actions/setup-python from 5 to 7 (https://github.com/iv-org/invidious/pull/5829, by @dependabot[bot])
 
 ## v2.20260723.0
 
